@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>错题筛选检测 - 雅思单词背诵</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+  <style>
+    :root {
+      --bg: #f5f7fa; --panel-bg: rgba(255,255,255,0.75); --text: #0f172a;
+      --text-secondary: #475569; --border: #e2e8f0; --accent: #3b82f6;
+      --accent-light: #eff6ff; --correct: #10b981; --wrong: #ef4444;
+      --card-bg: white; --shadow: 0 25px 45px rgba(0,0,0,0.1);
+    }
+    body.dark {
+      --bg: #0f172a; --panel-bg: rgba(30,41,59,0.85); --text: #f1f5f9;
+      --text-secondary: #cbd5e1; --border: #334155; --accent: #818cf8;
+      --accent-light: #312e81; --correct: #34d399; --wrong: #f87171;
+      --card-bg: #1e293b; --shadow: 0 25px 45px rgba(0,0,0,0.5);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI','PingFang SC',Roboto,sans-serif;
+      background: var(--bg); min-height: 100vh; color: var(--text);
+      display: flex; justify-content: center; align-items: flex-start;
+      padding: 20px; transition: background 0.3s;
+    }
+    .container {
+      width: 100%; max-width: 700px; background: var(--panel-bg);
+      backdrop-filter: blur(20px); border-radius: 28px;
+      box-shadow: var(--shadow); padding: 25px; display: flex;
+      flex-direction: column; gap: 14px; min-height: 500px;
+    }
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 999px; background: var(--card-bg);
+      border: 1px solid var(--border); color: var(--text);
+      text-decoration: none; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    }
+    .back-btn:hover { color: var(--accent); border-color: var(--accent); }
+    h1 {
+      font-size: 1.5rem; font-weight: 700;
+      background: linear-gradient(135deg,#3b82f6,#8b5cf6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .dark-toggle { cursor: pointer; background: none; border: none; font-size: 1.4rem; padding: 5px; }
+
+    /* Setup */
+    .setup { display: flex; flex-direction: column; gap: 16px; }
+    .setup-card {
+      background: var(--card-bg); border-radius: 20px; padding: 24px;
+      border: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px;
+    }
+    .setup-card h2 { font-size: 1.15rem; text-align: center; }
+    .filter-row { display: flex; align-items: center; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .select-style {
+      padding: 10px 15px; border-radius: 25px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    }
+    .num-input {
+      width: 70px; padding: 10px; border-radius: 12px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 1rem; text-align: center; font-weight: 700; outline: none;
+    }
+    .filter-btn {
+      background: var(--accent); color: white; border: none;
+      padding: 8px 20px; border-radius: 25px; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    }
+    .filter-results { min-height: 40px; font-size: 0.85rem; color: var(--text-secondary); text-align: center; }
+    .word-preview {
+      max-height: 200px; overflow-y: auto; background: var(--bg);
+      border-radius: 12px; padding: 10px; border: 1px solid var(--border);
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .word-chip {
+      background: var(--card-bg); border: 1px solid var(--border);
+      padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; cursor: pointer;
+    }
+    .word-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .start-btn {
+      background: linear-gradient(135deg,#3b82f6,#8b5cf6); color: white;
+      border: none; padding: 12px 28px; border-radius: 25px;
+      font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.3); }
+    .start-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Test */
+    .test-screen { display: none; flex-direction: column; gap: 14px; }
+    .test-banner { background: linear-gradient(90deg,#3b82f6,#8b5cf6); color: white; padding: 8px 16px; border-radius: 10px; font-weight: 600; text-align: center; }
+    .progress-bar { width: 100%; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg,#3b82f6,#8b5cf6); border-radius: 10px; transition: width 0.3s; }
+    .stats { display: flex; justify-content: space-around; background: var(--card-bg); border-radius: 16px; padding: 10px; font-weight: 500; color: var(--text-secondary); font-size: 0.85rem; }
+    .chinese-meaning { font-size: 2rem; font-weight: 600; text-align: center; color: var(--text); min-height: 70px; display: flex; align-items: center; justify-content: center; }
+    .answer-input { width: 100%; max-width: 500px; align-self: center; border: 1px solid var(--border); border-radius: 18px; background: var(--card-bg); color: var(--text); font-size: 1.2rem; font-weight: 700; padding: 14px 18px; text-align: center; outline: none; text-transform: lowercase; }
+    .answer-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.16); }
+    .result-area { text-align: center; font-weight: 600; min-height: 28px; font-size: 0.9rem; }
+    .result-area.correct { color: var(--correct); }
+    .result-area.wrong { color: var(--wrong); }
+    .actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .btn { background: var(--card-bg); border: 1px solid var(--border); padding: 10px 18px; border-radius: 25px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+    .btn:hover { color: var(--accent); border-color: var(--accent); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+
+    /* Finish */
+    .finish-screen { display: none; flex-direction: column; gap: 16px; align-items: center; padding: 20px 0; }
+    .finish-screen h2 { font-size: 1.5rem; }
+    @media (max-width: 600px) {
+      .container { padding: 16px; border-radius: 18px; }
+      h1 { font-size: 1.2rem; }
+      .chinese-meaning { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-left">
+      <a class="back-btn" href="雅思单词背诵.html">← 返回</a>
+      <h1>🔍 错题筛选检测</h1>
+    </div>
+    <button class="dark-toggle" id="darkToggle" title="深色模式">🌓</button>
+  </div>
+
+  <!-- Setup -->
+  <div class="setup" id="setupScreen">
+    <div class="setup-card">
+      <h2>筛选条件</h2>
+      <div class="filter-row">
+        <span>错误次数</span>
+        <select class="select-style" id="operator">
+          <option value="gte">≥ 大于等于</option>
+          <option value="gt">> 大于</option>
+          <option value="eq">= 等于</option>
+        </select>
+        <input type="number" class="num-input" id="threshold" value="1" min="0">
+        <button class="filter-btn" id="filterBtn">筛选</button>
+      </div>
+      <div class="filter-results" id="filterResults">请设置条件后点击筛选</div>
+      <div class="word-preview" id="wordPreview" style="display:none;"></div>
+      <button class="start-btn" id="startBtn" disabled>🎯 启动检测</button>
+    </div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-screen" id="testScreen">
+    <div class="test-banner" id="testBanner"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="stats">
+      <span>进度: <span id="statProgress">0/0</span></span>
+      <span>✅ <span id="statCorrect">0</span></span>
+      <span>❌ <span id="statWrong">0</span></span>
+    </div>
+    <div class="chinese-meaning" id="chineseDisplay"></div>
+    <input type="text" class="answer-input" id="answerInput" placeholder="输入单词..." autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="result-area" id="resultArea"></div>
+    <div class="actions">
+      <button class="btn" id="speakBtn">🔊 朗读</button>
+      <button class="btn primary" id="submitBtn">提交 (Enter)</button>
+      <button class="btn" id="exitBtn">退出</button>
+    </div>
+  </div>
+
+  <!-- Finish -->
+  <div class="finish-screen" id="finishScreen">
+    <h2 id="finishTitle">检测完成！</h2>
+    <button class="btn primary" onclick="location.reload()">返回筛选</button>
+  </div>
+</div>
+
+<script>
+let vocabulary = [];
+let wrongBook = [];
+let errorCounts = {};
+let activeUserId = 'me';
+let matchedWords = [];
+
+// ---- State ----
+function loadUserId(){ activeUserId = localStorage.getItem('vocab-tool-active-user') || 'me'; }
+function loadStateRaw(){ try { return JSON.parse(localStorage.getItem(`vocab-tool-state:${activeUserId}`)) || {}; } catch(e){ return {}; } }
+
+// ---- Chapter loading ----
+function loadChapter(chapterId){
+  return new Promise(resolve=>{
+    const old = document.querySelector('script[data-chapter]');
+    if(old) old.remove();
+    vocabulary = [];
+    const script = document.createElement('script');
+    script.src = `./data/data-${chapterId}.js`;
+    script.setAttribute('data-chapter', chapterId);
+    script.onload = ()=>resolve();
+    script.onerror = ()=>{ vocabulary = []; resolve(); };
+    document.head.appendChild(script);
+  });
+}
+
+async function loadAllChapters(){
+  let allWords = [];
+  for(let ch = 1; ch <= 22; ch++){
+    await loadChapter(ch);
+    allWords = allWords.concat(vocabulary.map(w => ({...w, chapter: ch})));
+  }
+  vocabulary = allWords;
+}
+
+// ---- TTS ----
+let voices = [], speechReady = false, ttsBusy = false;
+function loadVoices(){ return new Promise(r=>{ if(!('speechSynthesis' in window)) return r([]); voices = window.speechSynthesis.getVoices(); if(voices.length) r(voices); else window.speechSynthesis.addEventListener('voiceschanged',()=>{ voices = window.speechSynthesis.getVoices(); r(voices); },{once:true}); }); }
+async function initSpeech(){ if(speechReady) return; await loadVoices(); speechReady = true; }
+async function speakWord(word){
+  if(!('speechSynthesis' in window)) return;
+  await initSpeech();
+  if(ttsBusy) return;
+  ttsBusy = true;
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = 'en-US';
+  const en = voices.filter(v=>v.lang==='en-US');
+  if(en.length) u.voice = en[0];
+  else { const any = voices.filter(v=>v.lang && v.lang.startsWith('en')); if(any.length) u.voice = any[0]; }
+  u.rate = 0.9;
+  u.onend = ()=>{ ttsBusy = false; };
+  u.onerror = ()=>{ ttsBusy = false; };
+  window.speechSynthesis.speak(u);
+}
+
+// ---- Filter ----
+function applyFilter(){
+  const op = document.getElementById('operator').value;
+  const threshold = parseInt(document.getElementById('threshold').value) || 0;
+  matchedWords = vocabulary.filter(w=>{
+    const c = errorCounts[w.id] || 0;
+    if(op === 'gte') return c >= threshold;
+    if(op === 'gt') return c > threshold;
+    if(op === 'eq') return c === threshold;
+    return false;
+  });
+  const results = document.getElementById('filterResults');
+  const preview = document.getElementById('wordPreview');
+  const startBtn = document.getElementById('startBtn');
+  if(matchedWords.length === 0){
+    results.textContent = '没有符合条件的单词';
+    preview.style.display = 'none';
+    startBtn.disabled = true;
+  } else {
+    results.innerHTML = `找到 <strong style="color:var(--accent);font-size:1.1rem">${matchedWords.length}</strong> 个单词`;
+    preview.style.display = 'flex';
+    preview.innerHTML = matchedWords.slice(0, 50).map(w=>`<span class="word-chip">${w.word}</span>`).join('') + (matchedWords.length > 50 ? `<span class="word-chip">...共${matchedWords.length}个</span>` : '');
+    startBtn.disabled = false;
+  }
+}
+
+// ---- Test ----
+let testWords = [], currentIndex = 0, currentWord = null;
+let correctTotal = 0, wrongTotal = 0, isAnswered = false;
+
+function startTest(){
+  testWords = [...matchedWords].sort(()=>Math.random()-0.5);
+  currentIndex = 0; correctTotal = 0; wrongTotal = 0;
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('testScreen').style.display = 'flex';
+  document.getElementById('finishScreen').style.display = 'none';
+  loadNextWord();
+}
+
+function loadNextWord(){
+  if(currentIndex >= testWords.length){ finishTest(); return; }
+  currentWord = testWords[currentIndex];
+  isAnswered = false;
+  document.getElementById('chineseDisplay').textContent = currentWord.meaningCN || currentWord.word;
+  document.getElementById('answerInput').value = '';
+  document.getElementById('answerInput').disabled = false;
+  document.getElementById('answerInput').focus();
+  document.getElementById('resultArea').textContent = '';
+  document.getElementById('resultArea').className = 'result-area';
+  updateProgress();
+}
+
+function finishTest(){
+  // Update error counts in state
+  const state = loadStateRaw();
+  state.errorCounts = state.errorCounts || {};
+  // Save state
+  localStorage.setItem(`vocab-tool-state:${activeUserId}`, JSON.stringify(state));
+
+  document.getElementById('testScreen').style.display = 'none';
+  document.getElementById('finishScreen').style.display = 'flex';
+  document.getElementById('finishTitle').textContent = `检测完成！✅ ${correctTotal} · ❌ ${wrongTotal}`;
+}
+
+function submitAnswer(){
+  if(!currentWord || isAnswered) return;
+  const answer = document.getElementById('answerInput').value.trim().toLowerCase();
+  isAnswered = true;
+  document.getElementById('answerInput').disabled = true;
+  const correct = answer === currentWord.word.toLowerCase();
+  const result = document.getElementById('resultArea');
+  if(correct){
+    result.textContent = '✅ 正确！';
+    result.className = 'result-area correct';
+    correctTotal++;
+  } else {
+    result.textContent = `❌ 错误！正确答案：${currentWord.word}`;
+    result.className = 'result-area wrong';
+    wrongTotal++;
+    // Update error count
+    const state = loadStateRaw();
+    state.errorCounts = state.errorCounts || {};
+    state.errorCounts[currentWord.id] = (state.errorCounts[currentWord.id] || 0) + 1;
+    localStorage.setItem(`vocab-tool-state:${activeUserId}`, JSON.stringify(state));
+    errorCounts[currentWord.id] = (errorCounts[currentWord.id] || 0) + 1;
+  }
+  updateStats();
+  setTimeout(()=>{ currentIndex++; loadNextWord(); }, 1200);
+}
+
+function updateStats(){
+  document.getElementById('statCorrect').textContent = correctTotal;
+  document.getElementById('statWrong').textContent = wrongTotal;
+}
+
+function updateProgress(){
+  document.getElementById('statProgress').textContent = `${currentIndex + 1}/${testWords.length}`;
+  const pct = testWords.length > 0 ? (currentIndex / testWords.length * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('testBanner').textContent = `🔍 错题专项检测（${currentIndex + 1}/${testWords.length}）`;
+}
+
+// ---- Init ----
+async function init(){
+  loadUserId();
+  const state = loadStateRaw();
+  errorCounts = state.errorCounts || {};
+  wrongBook = state.wrongBookWords || [];
+
+  // Load all chapters
+  await loadAllChapters();
+
+  document.getElementById('filterBtn').addEventListener('click', applyFilter);
+  document.getElementById('startBtn').addEventListener('click', startTest);
+  document.getElementById('submitBtn').addEventListener('click', submitAnswer);
+  document.getElementById('answerInput').addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){ e.preventDefault(); submitAnswer(); }
+  });
+  document.getElementById('speakBtn').addEventListener('click', ()=>{
+    if(currentWord) speakWord(currentWord.word);
+  });
+  document.getElementById('exitBtn').addEventListener('click', ()=>{
+    if(confirm('确定退出检测吗？')) location.href = '雅思单词背诵.html';
+  });
+
+  // Dark mode
+  if(localStorage.getItem('darkMode')==='true') document.body.classList.add('dark');
+  document.getElementById('darkToggle').addEventListener('click', ()=>{
+    document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+  });
+
+  // Auto-apply default filter
+  applyFilter();
+}
+init();
+</script>
+</body>
+</html>

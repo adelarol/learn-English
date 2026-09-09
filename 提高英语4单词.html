@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>提高英语4 单词学习</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+  <style>
+    :root {
+      --bg: #f5f7fa; --panel-bg: rgba(255,255,255,0.78); --text: #0f172a;
+      --text-secondary: #475569; --border: #e2e8f0; --accent: #3b82f6;
+      --accent-light: #eff6ff; --correct: #10b981; --wrong: #ef4444;
+      --card-bg: white; --shadow: 0 20px 45px rgba(0,0,0,0.08);
+    }
+    body.dark {
+      --bg: #0f172a; --panel-bg: rgba(30,41,59,0.85); --text: #f1f5f9;
+      --text-secondary: #cbd5e1; --border: #334155; --accent: #818cf8;
+      --accent-light: #312e81; --correct: #34d399; --wrong: #f87171;
+      --card-bg: #1e293b; --shadow: 0 20px 45px rgba(0,0,0,0.45);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI','PingFang SC',Roboto,sans-serif;
+      background: var(--bg); min-height: 100vh; color: var(--text);
+      padding: 20px; transition: background 0.3s;
+    }
+    .container {
+      max-width: 900px; margin: 0 auto; background: var(--panel-bg);
+      backdrop-filter: blur(20px); border-radius: 28px; box-shadow: var(--shadow);
+      padding: 24px; display: flex; flex-direction: column; gap: 16px;
+    }
+    .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .header-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+      border-radius: 999px; background: var(--card-bg); border: 1px solid var(--border);
+      color: var(--text); text-decoration: none; font-size: 0.86rem; font-weight: 600;
+    }
+    .back-btn:hover { color: var(--accent); border-color: var(--accent); }
+    h1 {
+      font-size: 1.4rem; font-weight: 700;
+      background: linear-gradient(135deg,#3b82f6,#8b5cf6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .dark-toggle { cursor: pointer; background: none; border: none; font-size: 1.3rem; padding: 4px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 6px; background: var(--card-bg); border-radius: 999px; padding: 4px; align-self: center; flex-wrap: wrap; justify-content: center; }
+    .tab-btn {
+      border: none; background: transparent; padding: 9px 18px; border-radius: 999px;
+      font-size: 0.88rem; font-weight: 600; color: var(--text-secondary); cursor: pointer;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .tab-btn.active { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+    .tab-badge { background: rgba(239,68,68,0.9); color: #fff; border-radius: 999px; padding: 0 7px; font-size: 0.72rem; margin-left: 4px; }
+
+    .page { display: none; flex-direction: column; gap: 14px; }
+    .page.active { display: flex; }
+
+    /* Search / controls */
+    .control-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .search-box {
+      flex: 1; min-width: 180px; padding: 11px 18px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--card-bg); color: var(--text);
+      font-size: 0.92rem; outline: none;
+    }
+    .search-box:focus { border-color: var(--accent); }
+    .select-style {
+      padding: 10px 14px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--card-bg); color: var(--text); font-size: 0.86rem; cursor: pointer;
+    }
+    .hint-text { font-size: 0.82rem; color: var(--text-secondary); text-align: center; }
+
+    /* Word list (learn mode) */
+    .word-list { display: flex; flex-direction: column; gap: 8px; max-height: 56vh; overflow-y: auto; padding-right: 4px; }
+    .word-list::-webkit-scrollbar { width: 6px; }
+    .word-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .word-card {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+      border-radius: 14px; background: var(--card-bg); border: 1px solid var(--border);
+    }
+    .word-card .speak-btn {
+      background: none; border: none; cursor: pointer; font-size: 1.15rem;
+      padding: 4px 6px; border-radius: 8px; color: var(--accent); flex-shrink: 0;
+    }
+    .word-card .speak-btn:hover { background: var(--accent-light); transform: scale(1.15); }
+    .word-card .info { flex: 1; min-width: 0; }
+    .word-card .w { font-weight: 700; font-size: 1.02rem; }
+    .word-card .ph { font-size: 0.76rem; color: var(--text-secondary); margin-left: 8px; }
+    .word-card .m { font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px; }
+    .word-card .mark-btn {
+      border: none; cursor: pointer; font-size: 0.72rem; padding: 5px 12px;
+      border-radius: 999px; font-weight: 600; flex-shrink: 0; transition: all 0.2s;
+    }
+    .mark-btn.add { background: #f59e0b; color: #fff; }
+    .mark-btn.added { background: none; border: 1px solid #f59e0b; color: #f59e0b; cursor: default; }
+    .empty { text-align: center; padding: 40px; color: var(--text-secondary); font-size: 0.9rem; }
+
+    /* Test mode */
+    .test-area { display: flex; flex-direction: column; gap: 14px; align-items: center; padding: 10px 0; }
+    .progress-bar { width: 100%; max-width: 560px; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg,#3b82f6,#8b5cf6); border-radius: 10px; transition: width 0.3s; }
+    .test-stats { display: flex; gap: 22px; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; }
+    .test-stats .c { color: var(--correct); } .test-stats .w { color: var(--wrong); }
+    .test-card {
+      width: 100%; max-width: 560px; background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 24px; padding: 36px 28px; text-align: center; display: flex; flex-direction: column; gap: 14px;
+      min-height: 300px; justify-content: center;
+    }
+    .test-word { font-size: 2.2rem; font-weight: 800; letter-spacing: 0.01em; word-break: break-word; }
+    .test-phonetic { font-size: 0.95rem; color: var(--text-secondary); }
+    .test-speak {
+      align-self: center; background: var(--accent-light); border: 1px solid var(--border);
+      border-radius: 999px; padding: 8px 18px; font-size: 0.9rem; cursor: pointer; color: var(--accent); font-weight: 600;
+    }
+    .test-meaning {
+      font-size: 1.05rem; line-height: 1.7; color: var(--text); background: var(--accent-light);
+      border-radius: 14px; padding: 14px 18px; display: none;
+    }
+    .test-meaning.show { display: block; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .test-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .know-btn, .dont-know-btn {
+      border: none; padding: 14px 34px; border-radius: 999px; font-size: 1rem;
+      font-weight: 700; cursor: pointer; transition: all 0.2s; min-width: 150px;
+    }
+    .know-btn { background: var(--correct); color: #fff; }
+    .know-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.3); }
+    .dont-know-btn { background: var(--wrong); color: #fff; }
+    .dont-know-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239,68,68,0.3); }
+    .mistake-btn {
+      border: none; padding: 14px 34px; border-radius: 999px; font-size: 1rem;
+      font-weight: 700; cursor: pointer; transition: all 0.2s; min-width: 150px;
+      background: #f59e0b; color: #fff;
+    }
+    .mistake-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245,158,11,0.35); }
+    .next-btn {
+      border: 1px solid var(--border); padding: 14px 34px; border-radius: 999px; font-size: 1rem;
+      font-weight: 700; cursor: pointer; transition: all 0.2s; min-width: 150px;
+      background: var(--card-bg); color: var(--text);
+    }
+    .next-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+    .test-setup { text-align: center; display: flex; flex-direction: column; gap: 16px; align-items: center; padding: 30px 0; }
+    .big-btn {
+      background: linear-gradient(135deg,#3b82f6,#8b5cf6); color: #fff; border: none;
+      padding: 14px 36px; border-radius: 999px; font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .big-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(59,130,246,0.35); }
+    .big-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .ghost-btn {
+      background: var(--card-bg); border: 1px solid var(--border); color: var(--text-secondary);
+      padding: 10px 22px; border-radius: 999px; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+    }
+    .ghost-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .finish-box { text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; padding: 20px 0; }
+    .finish-box h2 { font-size: 1.4rem; }
+
+    /* Unknown book */
+    .book-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .book-item {
+      display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+      border-radius: 14px; background: var(--card-bg); border: 1px solid var(--border);
+    }
+    .book-item .info { flex: 1; min-width: 0; }
+    .book-item .w { font-weight: 700; }
+    .book-item .ph { font-size: 0.74rem; color: var(--text-secondary); margin-left: 6px; }
+    .book-item .m { font-size: 0.83rem; color: var(--text-secondary); margin-top: 2px; }
+    .book-item .m-edit { width: 100%; margin-top: 4px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--accent); background: var(--bg); color: var(--text); font-size: 0.83rem; }
+    .icon-btn {
+      background: none; border: 1px solid var(--border); border-radius: 8px;
+      cursor: pointer; font-size: 0.85rem; padding: 4px 8px; color: var(--text-secondary); flex-shrink: 0;
+    }
+    .icon-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .icon-btn.del:hover { color: var(--wrong); border-color: var(--wrong); }
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      .container { padding: 16px; border-radius: 18px; }
+      h1 { font-size: 1.15rem; }
+      .test-word { font-size: 1.7rem; }
+      .know-btn, .dont-know-btn, .mistake-btn, .next-btn { min-width: 120px; padding: 12px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-left">
+      <a class="back-btn" href="index.html">← 返回主页</a>
+      <h1>📖 提高英语4 单词</h1>
+    </div>
+    <button class="dark-toggle" id="darkToggle" title="深色模式">🌓</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="learn">📚 学习</button>
+    <button class="tab-btn" data-tab="test">🧪 检测</button>
+    <button class="tab-btn" data-tab="book">❓ 不会词本<span class="tab-badge" id="bookBadge" style="display:none;">0</span></button>
+  </div>
+
+  <!-- 学习模式 -->
+  <div class="page active" id="page-learn">
+    <div class="control-row">
+      <input type="text" class="search-box" id="learnSearch" placeholder="搜索单词或释义...">
+      <button class="ghost-btn" id="speakAllBtn">🔊 顺序朗读</button>
+    </div>
+    <div class="hint-text">看英语，记汉语意思。点击 🔊 朗读单词，点击 <b style="color:#f59e0b;">+不会</b> 可手动加入不会词本。</div>
+    <div class="word-list" id="learnList"></div>
+  </div>
+
+  <!-- 检测模式 -->
+  <div class="page" id="page-test">
+    <div class="test-setup" id="testSetup">
+      <h2 style="font-size:1.2rem;">单词检测</h2>
+      <p class="hint-text" style="max-width:420px;">屏幕显示英语单词，判断你是否认识。<br>选「不认识」的单词自动加入<b style="color:var(--wrong);">不会词本</b>；<br>选「认识」后如果发现记错了，可点「记错了」同样加入不会词本。</p>
+      <div class="control-row" style="justify-content:center;">
+        <select class="select-style" id="testScope">
+          <option value="all">全部单词</option>
+          <option value="unknown">仅不会词本</option>
+        </select>
+        <select class="select-style" id="testOrder">
+          <option value="random">随机顺序</option>
+          <option value="sequential">课本顺序</option>
+        </select>
+      </div>
+      <button class="big-btn" id="startTestBtn">开始检测</button>
+      <p class="hint-text" id="testScopeHint"></p>
+    </div>
+    <div class="test-area" id="testArea" style="display:none;">
+      <div class="progress-bar"><div class="progress-fill" id="testProgress"></div></div>
+      <div class="test-stats">
+        <span>进度 <b id="testIndex">1</b>/<b id="testTotal">0</b></span>
+        <span class="c">✅ 认识 <b id="testKnow">0</b></span>
+        <span class="w">❌ 不认识 <b id="testDont">0</b></span>
+      </div>
+      <div class="test-card">
+        <div class="test-word" id="testWord"></div>
+        <div class="test-phonetic" id="testPhonetic"></div>
+        <button class="test-speak" id="testSpeak">🔊 朗读</button>
+        <div class="test-meaning" id="testMeaning"></div>
+      </div>
+      <div class="test-actions" id="testActions">
+        <button class="know-btn" id="knowBtn">✅ 认识</button>
+        <button class="dont-know-btn" id="dontKnowBtn">❌ 不认识</button>
+        <button class="mistake-btn" id="mistakeBtn" style="display:none;">📝 记错了</button>
+        <button class="next-btn" id="nextBtn" style="display:none;">➡️ 下一个</button>
+      </div>
+      <button class="ghost-btn" id="exitTestBtn">退出检测</button>
+    </div>
+    <div class="finish-box" id="finishBox" style="display:none;">
+      <h2>本轮检测完成！</h2>
+      <p class="hint-text" id="finishStats"></p>
+      <div class="book-actions">
+        <button class="big-btn" id="againBtn">再测一轮</button>
+        <button class="ghost-btn" id="toBookBtn">查看不会词本</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 不会词本 -->
+  <div class="page" id="page-book">
+    <div class="control-row" style="justify-content:center;">
+      <input type="text" class="search-box" id="bookSearch" placeholder="搜索不会的单词..." style="max-width:360px;">
+      <button class="ghost-btn" id="addCustomBtn">＋ 手动添加</button>
+      <button class="ghost-btn" id="clearBookBtn" style="color:var(--wrong);">清空</button>
+    </div>
+    <div class="hint-text">这里保存你标记为「不认识」的单词。点 ✏️ 可修改释义，点 ✕ 删除。</div>
+    <div class="book-actions">
+      <button class="big-btn" id="testBookBtn">🎯 专门检测不会的单词</button>
+    </div>
+    <div class="word-list" id="bookList"></div>
+  </div>
+</div>
+
+<script src="./data/english4-words.js"></script>
+<script>
+(function(){
+  const allWords = (typeof english4Vocabulary !== 'undefined' && english4Vocabulary) ? english4Vocabulary : [];
+  const STATE_KEY = 'english4-state-v1';
+
+  // ---- State ----
+  let unknownBook = [];
+  function loadState(){
+    try { unknownBook = JSON.parse(localStorage.getItem(STATE_KEY) || '[]'); }
+    catch(e){ unknownBook = []; }
+    if(!Array.isArray(unknownBook)) unknownBook = [];
+  }
+  function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(unknownBook)); }
+  function inBook(id){ return unknownBook.some(w => w.id === id || w.word.toLowerCase() === String(id).toLowerCase()); }
+  function addToBook(w){
+    if(!inBook(w.id)){
+      unknownBook.push({ id: w.id, word: w.word, phonetic: w.phonetic || '', meaning: w.meaning || '', custom: !!w.custom });
+      saveState(); updateBadge();
+    }
+  }
+  function removeFromBook(id){
+    unknownBook = unknownBook.filter(w => w.id !== id && w.word !== id);
+    saveState(); updateBadge();
+  }
+  function updateBadge(){
+    const b = document.getElementById('bookBadge');
+    if(unknownBook.length > 0){ b.style.display = 'inline-block'; b.textContent = unknownBook.length; }
+    else b.style.display = 'none';
+  }
+
+  // ---- TTS ----
+  let voices = [], speechReady = false, ttsBusy = false;
+  function loadVoices(){ return new Promise(r=>{ if(!('speechSynthesis' in window)) return r([]); voices = speechSynthesis.getVoices(); if(voices.length) r(voices); else speechSynthesis.addEventListener('voiceschanged',()=>{ voices = speechSynthesis.getVoices(); r(voices); },{once:true}); }); }
+  async function initSpeech(){ if(speechReady) return; try{ await loadVoices(); speechReady = true; }catch(e){} }
+  function speak(word){
+    if(!('speechSynthesis' in window)) return;
+    initSpeech();
+    if(ttsBusy) return;
+    ttsBusy = true;
+    try { speechSynthesis.cancel(); } catch(e){}
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US';
+    const en = voices.filter(v=>v.lang==='en-US');
+    if(en.length) u.voice = en[0];
+    else { const any = voices.filter(v=>v.lang && v.lang.indexOf('en')===0); if(any.length) u.voice = any[0]; }
+    u.rate = 0.9;
+    u.onend = ()=>{ ttsBusy = false; };
+    u.onerror = ()=>{ ttsBusy = false; };
+    setTimeout(()=>{ try{ speechSynthesis.speak(u); }catch(e){ ttsBusy = false; } }, 30);
+  }
+
+  // ---- Tabs ----
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('page-' + btn.dataset.tab).classList.add('active');
+      if(btn.dataset.tab === 'book') renderBookList();
+    });
+  });
+
+  // ---- Learn list ----
+  function renderLearnList(){
+    const q = document.getElementById('learnSearch').value.toLowerCase().trim();
+    const list = allWords.filter(w => !q || w.word.toLowerCase().indexOf(q) >= 0 || (w.meaning||'').indexOf(q) >= 0);
+    const el = document.getElementById('learnList');
+    if(!list.length){ el.innerHTML = '<div class="empty">没有匹配的单词</div>'; return; }
+    el.innerHTML = list.map(w=>{
+      const added = inBook(w.id);
+      return `<div class="word-card">
+        <button class="speak-btn" data-word="${escapeAttr(w.word)}">🔊</button>
+        <div class="info">
+          <span class="w">${escapeHtml(w.word)}</span><span class="ph">${escapeHtml(w.phonetic||'')}</span>
+          <div class="m">${escapeHtml(w.meaning||'')}</div>
+        </div>
+        <button class="mark-btn ${added?'added':'add'}" data-id="${w.id}">${added?'已在词本':'+不会'}</button>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('.speak-btn').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); speak(b.dataset.word); }));
+    el.querySelectorAll('.mark-btn.add').forEach(b=>b.addEventListener('click',e=>{
+      e.stopPropagation();
+      const w = allWords.find(x=>x.id == b.dataset.id);
+      if(w){ addToBook(w); renderLearnList(); }
+    }));
+  }
+  document.getElementById('learnSearch').addEventListener('input', renderLearnList);
+  document.getElementById('speakAllBtn').addEventListener('click', async ()=>{
+    await initSpeech();
+    const q = document.getElementById('learnSearch').value.toLowerCase().trim();
+    const list = allWords.filter(w => !q || w.word.toLowerCase().indexOf(q) >= 0 || (w.meaning||'').indexOf(q) >= 0).slice(0, 30);
+    for(const w of list){
+      speak(w.word);
+      await new Promise(r=>setTimeout(r, w.word.length*180 + 700));
+    }
+  });
+
+  // ---- Book list ----
+  function renderBookList(){
+    const q = document.getElementById('bookSearch').value.toLowerCase().trim();
+    const list = unknownBook.filter(w => !q || w.word.toLowerCase().indexOf(q) >= 0 || (w.meaning||'').indexOf(q) >= 0);
+    const el = document.getElementById('bookList');
+    if(!unknownBook.length){ el.innerHTML = '<div class="empty">不会词本为空。<br>去「检测」里测试单词，不认识的会自动收集到这里。</div>'; return; }
+    if(!list.length){ el.innerHTML = '<div class="empty">没有匹配的单词</div>'; return; }
+    el.innerHTML = list.map(w=>`
+      <div class="book-item" data-id="${w.id}">
+        <button class="icon-btn speak-btn" data-word="${escapeAttr(w.word)}" style="border:none;font-size:1.05rem;">🔊</button>
+        <div class="info">
+          <span class="w">${escapeHtml(w.word)}</span><span class="ph">${escapeHtml(w.phonetic||'')}</span>
+          <div class="m">${escapeHtml(w.meaning||'')}</div>
+        </div>
+        <button class="icon-btn edit-btn" title="修改释义">✏️</button>
+        <button class="icon-btn del" title="删除">✕</button>
+      </div>`).join('');
+    el.querySelectorAll('.speak-btn').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); speak(b.dataset.word); }));
+    el.querySelectorAll('.del').forEach(b=>b.addEventListener('click',e=>{
+      e.stopPropagation();
+      const item = b.closest('.book-item');
+      removeFromBook(item.dataset.id);
+      renderBookList();
+    }));
+    el.querySelectorAll('.edit-btn').forEach(b=>b.addEventListener('click',e=>{
+      e.stopPropagation();
+      const item = b.closest('.book-item');
+      const w = unknownBook.find(x=>String(x.id) === String(item.dataset.id));
+      if(!w) return;
+      const info = item.querySelector('.info');
+      const input = document.createElement('input');
+      input.type = 'text'; input.className = 'm-edit'; input.value = w.meaning || '';
+      info.querySelector('.m').style.display = 'none';
+      info.appendChild(input); input.focus();
+      const save = ()=>{
+        w.meaning = input.value.trim();
+        saveState(); renderBookList();
+      };
+      input.addEventListener('blur', save);
+      input.addEventListener('keydown', ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); input.blur(); } });
+    }));
+  }
+  document.getElementById('bookSearch').addEventListener('input', renderBookList);
+  document.getElementById('addCustomBtn').addEventListener('click', ()=>{
+    const word = prompt('输入要添加的单词或短语：');
+    if(!word || !word.trim()) return;
+    const meaning = prompt('输入释义（可留空）：') || '';
+    const w = { id: 'custom-' + Date.now(), word: word.trim(), phonetic: '', meaning: meaning.trim(), custom: true };
+    addToBook(w); renderBookList();
+  });
+  document.getElementById('clearBookBtn').addEventListener('click', ()=>{
+    if(unknownBook.length && confirm('确定清空不会词本吗？')){ unknownBook = []; saveState(); updateBadge(); renderBookList(); }
+  });
+
+  // ---- Test ----
+  let testList = [], testIdx = 0, testKnowCount = 0, testDontCount = 0;
+  let testScope = 'all', testAnswered = false, testAutoTimer = null;
+
+  document.getElementById('testScope').addEventListener('change', updateScopeHint);
+  function updateScopeHint(){
+    const scope = document.getElementById('testScope').value;
+    const hint = document.getElementById('testScopeHint');
+    if(scope === 'unknown'){
+      hint.textContent = '不会词本共 ' + unknownBook.length + ' 个单词。检测中点「认识」的将移出没本，「不认识」的保留。';
+      document.getElementById('startTestBtn').disabled = unknownBook.length === 0;
+      document.getElementById('startTestBtn').textContent = unknownBook.length ? '开始检测' : '不会词本为空';
+    } else {
+      hint.textContent = '全部共 ' + allWords.length + ' 个词条（含单词和短语）。点「不认识」的单词会加入不会词本。';
+      document.getElementById('startTestBtn').disabled = false;
+      document.getElementById('startTestBtn').textContent = '开始检测';
+    }
+  }
+
+  function startTest(scope){
+    testScope = scope || document.getElementById('testScope').value;
+    const order = document.getElementById('testOrder').value;
+    let src = testScope === 'unknown' ? unknownBook.slice() : allWords.slice();
+    if(!src.length) return;
+    testList = order === 'random' ? src.sort(()=>Math.random()-0.5) : src;
+    testIdx = 0; testKnowCount = 0; testDontCount = 0;
+    document.getElementById('testSetup').style.display = 'none';
+    document.getElementById('finishBox').style.display = 'none';
+    document.getElementById('testArea').style.display = 'flex';
+    document.getElementById('testTotal').textContent = testList.length;
+    initSpeech();
+    showTestWord();
+  }
+  function showTestWord(){
+    if(testIdx >= testList.length){ finishTest(); return; }
+    testAnswered = false;
+    const w = testList[testIdx];
+    document.getElementById('testWord').textContent = w.word;
+    document.getElementById('testPhonetic').textContent = w.phonetic || '';
+    document.getElementById('testMeaning').textContent = w.meaning || '';
+    document.getElementById('testMeaning').classList.remove('show');
+    document.getElementById('testIndex').textContent = testIdx + 1;
+    document.getElementById('testKnow').textContent = testKnowCount;
+    document.getElementById('testDont').textContent = testDontCount;
+    document.getElementById('testProgress').style.width = (testIdx / testList.length * 100) + '%';
+    // Reset buttons
+    document.getElementById('knowBtn').style.display = '';
+    document.getElementById('dontKnowBtn').style.display = '';
+    document.getElementById('mistakeBtn').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+    setTimeout(()=>speak(w.word), 150);
+  }
+  function answer(known){
+    if(testAnswered) return;
+    testAnswered = true;
+    const w = testList[testIdx];
+    document.getElementById('testMeaning').classList.add('show');
+    document.getElementById('knowBtn').style.display = 'none';
+    document.getElementById('dontKnowBtn').style.display = 'none';
+    if(known){
+      testKnowCount++;
+      if(testScope === 'unknown') removeFromBook(w.id);
+      // Show "记错了" + "下一个" — user decides
+      document.getElementById('mistakeBtn').style.display = '';
+      document.getElementById('nextBtn').style.display = '';
+    } else {
+      testDontCount++;
+      if(testScope === 'all') addToBook(w);
+      // Show "下一个" button + auto-advance
+      document.getElementById('nextBtn').style.display = '';
+      testAutoTimer = setTimeout(()=>{ nextWord(); }, 1100);
+    }
+    document.getElementById('testKnow').textContent = testKnowCount;
+    document.getElementById('testDont').textContent = testDontCount;
+  }
+  function markMistake(){
+    if(!testAnswered) return;
+    const w = testList[testIdx];
+    // Undo know, count as dont-know
+    testKnowCount--;
+    testDontCount++;
+    // Add to unknown book
+    if(testScope === 'all') addToBook(w);
+    else if(testScope === 'unknown') addToBook(w); // was removed, re-add
+    document.getElementById('testKnow').textContent = testKnowCount;
+    document.getElementById('testDont').textContent = testDontCount;
+    document.getElementById('mistakeBtn').style.display = 'none';
+    nextWord();
+  }
+  function nextWord(){
+    if(testAutoTimer){ clearTimeout(testAutoTimer); testAutoTimer = null; }
+    testIdx++;
+    showTestWord();
+  }
+  function finishTest(){
+    if(testAutoTimer){ clearTimeout(testAutoTimer); testAutoTimer = null; }
+    document.getElementById('testArea').style.display = 'none';
+    document.getElementById('finishBox').style.display = 'flex';
+    const rest = testDontCount;
+    document.getElementById('finishStats').innerHTML =
+      '共 ' + testList.length + ' 个 · <b style="color:var(--correct);">认识 ' + testKnowCount + '</b> · <b style="color:var(--wrong);">不认识 ' + testDontCount + '</b><br>' +
+      (testScope === 'all'
+        ? (rest > 0 ? '有 ' + rest + ' 个单词已加入不会词本，可去词本中专门复习。' : '全部认识，太棒了！')
+        : (testKnowCount > 0 ? '有 ' + testKnowCount + ' 个单词已移出没本。' : '继续加油，多测几轮！'));
+  }
+  document.getElementById('startTestBtn').addEventListener('click', ()=>startTest());
+  document.getElementById('testBookBtn').addEventListener('click', ()=>{
+    if(!unknownBook.length){ alert('不会词本为空'); return; }
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab==='test'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-test'));
+    document.getElementById('testScope').value = 'unknown';
+    updateScopeHint();
+    startTest('unknown');
+  });
+  document.getElementById('knowBtn').addEventListener('click', ()=>answer(true));
+  document.getElementById('dontKnowBtn').addEventListener('click', ()=>answer(false));
+  document.getElementById('mistakeBtn').addEventListener('click', markMistake);
+  document.getElementById('nextBtn').addEventListener('click', nextWord);
+  document.getElementById('testSpeak').addEventListener('click', ()=>{ const w = testList[testIdx]; if(w) speak(w.word); });
+  document.getElementById('exitTestBtn').addEventListener('click', ()=>{
+    if(confirm('确定退出本轮检测吗？')){
+      document.getElementById('testArea').style.display = 'none';
+      document.getElementById('testSetup').style.display = 'flex';
+      updateScopeHint();
+    }
+  });
+  document.getElementById('againBtn').addEventListener('click', ()=>{
+    document.getElementById('finishBox').style.display = 'none';
+    document.getElementById('testSetup').style.display = 'flex';
+    updateScopeHint();
+  });
+  document.getElementById('toBookBtn').addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab==='book'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-book'));
+    renderBookList();
+  });
+
+  // ---- Utils ----
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s){ return escapeHtml(s); }
+
+  // ---- Init ----
+  loadState();
+  updateBadge();
+  updateScopeHint();
+  renderLearnList();
+  if(localStorage.getItem('darkMode')==='true') document.body.classList.add('dark');
+  document.getElementById('darkToggle').addEventListener('click', ()=>{
+    document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+  });
+  window.addEventListener('focus', ()=>{ loadState(); updateBadge(); renderBookList(); });
+})();
+</script>
+</body>
+</html>

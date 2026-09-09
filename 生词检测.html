@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生词检测 - 雅思单词背诵</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+  <style>
+    :root {
+      --bg: #f5f7fa; --panel-bg: rgba(255,255,255,0.75); --text: #0f172a;
+      --text-secondary: #475569; --border: #e2e8f0; --accent: #3b82f6;
+      --accent-light: #eff6ff; --correct: #10b981; --wrong: #ef4444;
+      --card-bg: white; --shadow: 0 25px 45px rgba(0,0,0,0.1);
+    }
+    body.dark {
+      --bg: #0f172a; --panel-bg: rgba(30,41,59,0.85); --text: #f1f5f9;
+      --text-secondary: #cbd5e1; --border: #334155; --accent: #818cf8;
+      --accent-light: #312e81; --correct: #34d399; --wrong: #f87171;
+      --card-bg: #1e293b; --shadow: 0 25px 45px rgba(0,0,0,0.5);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI','PingFang SC',Roboto,sans-serif;
+      background: var(--bg); min-height: 100vh; color: var(--text);
+      display: flex; justify-content: center; align-items: flex-start;
+      padding: 20px; transition: background 0.3s;
+    }
+    .container {
+      width: 100%; max-width: 700px; background: var(--panel-bg);
+      backdrop-filter: blur(20px); border-radius: 28px;
+      box-shadow: var(--shadow); padding: 25px; display: flex;
+      flex-direction: column; gap: 14px; min-height: 500px;
+    }
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 999px; background: var(--card-bg);
+      border: 1px solid var(--border); color: var(--text);
+      text-decoration: none; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    }
+    .back-btn:hover { color: var(--accent); border-color: var(--accent); }
+    h1 {
+      font-size: 1.5rem; font-weight: 700;
+      background: linear-gradient(135deg,#3b82f6,#8b5cf6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .dark-toggle { cursor: pointer; background: none; border: none; font-size: 1.4rem; padding: 5px; }
+
+    /* Setup screen */
+    .setup { display: flex; flex-direction: column; gap: 20px; align-items: center; padding: 30px 0; }
+    .setup-card {
+      background: var(--card-bg); border-radius: 20px; padding: 28px;
+      width: 100%; max-width: 440px; border: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .setup-card h2 { font-size: 1.2rem; text-align: center; }
+    .setup-info { text-align: center; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.7; }
+    .count-row { display: flex; align-items: center; gap: 10px; justify-content: center; }
+    .count-input {
+      width: 80px; padding: 10px; border-radius: 12px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 1.1rem; text-align: center; font-weight: 700; outline: none;
+    }
+    .count-input:focus { border-color: var(--accent); }
+    .count-label { color: var(--text-secondary); font-size: 0.9rem; }
+    .start-btn {
+      background: linear-gradient(135deg,#3b82f6,#8b5cf6); color: white;
+      border: none; padding: 12px 28px; border-radius: 25px;
+      font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.3); }
+    .start-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Test screen */
+    .test-screen { display: none; flex-direction: column; gap: 14px; }
+    .test-banner {
+      background: linear-gradient(90deg,#3b82f6,#8b5cf6); color: white;
+      padding: 8px 16px; border-radius: 10px; font-weight: 600; text-align: center;
+    }
+    .progress-bar { width: 100%; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg,#3b82f6,#8b5cf6); border-radius: 10px; transition: width 0.3s; }
+    .stats { display: flex; justify-content: space-around; background: var(--card-bg); border-radius: 16px; padding: 10px; font-weight: 500; color: var(--text-secondary); font-size: 0.85rem; }
+    .chinese-meaning {
+      font-size: 2rem; font-weight: 600; text-align: center; color: var(--text);
+      min-height: 70px; display: flex; align-items: center; justify-content: center;
+    }
+    .answer-input {
+      width: 100%; max-width: 500px; align-self: center;
+      border: 1px solid var(--border); border-radius: 18px;
+      background: var(--card-bg); color: var(--text);
+      font-size: 1.2rem; font-weight: 700; padding: 14px 18px;
+      text-align: center; outline: none; text-transform: lowercase;
+    }
+    .answer-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.16); }
+    .result-area { text-align: center; font-weight: 600; min-height: 28px; font-size: 0.9rem; }
+    .result-area.correct { color: var(--correct); }
+    .result-area.wrong { color: var(--wrong); }
+    .actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      background: var(--card-bg); border: 1px solid var(--border);
+      padding: 10px 18px; border-radius: 25px; font-size: 0.85rem;
+      font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+    }
+    .btn:hover { color: var(--accent); border-color: var(--accent); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .btn.primary:hover { opacity: 0.9; }
+
+    /* Finish screen */
+    .finish-screen { display: none; flex-direction: column; gap: 16px; align-items: center; padding: 20px 0; }
+    .finish-screen h2 { font-size: 1.5rem; }
+    .finish-list { width: 100%; max-width: 500px; max-height: 300px; overflow-y: auto; background: var(--card-bg); border-radius: 16px; padding: 12px; border: 1px solid var(--border); }
+    .finish-item { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 0.88rem; display: flex; justify-content: space-between; }
+    .finish-item:last-child { border-bottom: none; }
+    .finish-item .word { font-weight: 600; }
+    .finish-item .status { font-weight: 600; }
+    .finish-item .status.pass { color: var(--correct); }
+    .finish-item .status.fail { color: var(--wrong); }
+    @media (max-width: 600px) {
+      .container { padding: 16px; border-radius: 18px; }
+      h1 { font-size: 1.2rem; }
+      .chinese-meaning { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-left">
+      <a class="back-btn" href="雅思单词背诵.html">← 返回</a>
+      <h1>📝 生词检测</h1>
+    </div>
+    <button class="dark-toggle" id="darkToggle" title="深色模式">🌓</button>
+  </div>
+
+  <!-- Setup -->
+  <div class="setup" id="setupScreen">
+    <div class="setup-card">
+      <h2>生词本检测设置</h2>
+      <div class="setup-info" id="setupInfo"></div>
+      <div class="count-row">
+        <span class="count-label">本次检测</span>
+        <input type="number" class="count-input" id="countInput" value="20" min="1">
+        <span class="count-label">个生词</span>
+      </div>
+      <button class="start-btn" id="startBtn">开始检测</button>
+    </div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-screen" id="testScreen">
+    <div class="test-banner" id="testBanner"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="stats">
+      <span>进度: <span id="statProgress">0/0</span></span>
+      <span>✅ <span id="statCorrect">0</span></span>
+      <span>❌ <span id="statWrong">0</span></span>
+    </div>
+    <div class="chinese-meaning" id="chineseDisplay"></div>
+    <input type="text" class="answer-input" id="answerInput" placeholder="输入单词..." autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="result-area" id="resultArea"></div>
+    <div class="actions">
+      <button class="btn" id="speakBtn">🔊 朗读</button>
+      <button class="btn primary" id="submitBtn">提交 (Enter)</button>
+      <button class="btn" id="exitBtn">退出</button>
+    </div>
+  </div>
+
+  <!-- Finish -->
+  <div class="finish-screen" id="finishScreen">
+    <h2 id="finishTitle">检测完成！</h2>
+    <div class="finish-list" id="finishList"></div>
+    <button class="btn primary" onclick="location.reload()">返回设置</button>
+  </div>
+</div>
+
+<script>
+let vocabulary = [];
+let newWordBook = [];
+let wrongBook = [];
+let errorCounts = {};
+let activeUserId = 'me';
+
+// ---- State ----
+function loadUserId(){ activeUserId = localStorage.getItem('vocab-tool-active-user') || 'me'; }
+function loadStateRaw(){ try { return JSON.parse(localStorage.getItem(`vocab-tool-state:${activeUserId}`)) || {}; } catch(e){ return {}; } }
+function saveState(state){ localStorage.setItem(`vocab-tool-state:${activeUserId}`, JSON.stringify(state)); }
+
+// ---- TTS ----
+let voices = [], speechReady = false, ttsBusy = false;
+function loadVoices(){ return new Promise(r=>{ if(!('speechSynthesis' in window)) return r([]); voices = window.speechSynthesis.getVoices(); if(voices.length) r(voices); else window.speechSynthesis.addEventListener('voiceschanged',()=>{ voices = window.speechSynthesis.getVoices(); r(voices); },{once:true}); }); }
+async function initSpeech(){ if(speechReady) return; await loadVoices(); speechReady = true; }
+async function speakWord(word){
+  if(!('speechSynthesis' in window)) return;
+  await initSpeech();
+  if(ttsBusy) return;
+  ttsBusy = true;
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = 'en-US';
+  const en = voices.filter(v=>v.lang==='en-US');
+  if(en.length) u.voice = en[0];
+  else { const any = voices.filter(v=>v.lang && v.lang.startsWith('en')); if(any.length) u.voice = any[0]; }
+  u.rate = 0.9;
+  u.onend = ()=>{ ttsBusy = false; };
+  u.onerror = ()=>{ ttsBusy = false; };
+  window.speechSynthesis.speak(u);
+}
+
+// ---- Test logic ----
+let testWords = [], currentIndex = 0, currentWord = null;
+let correctTotal = 0, wrongTotal = 0, isAnswered = false;
+let roundIndex = 0, currentWordErrors = {};
+
+function startTest(count){
+  const state = loadStateRaw();
+  newWordBook = state.newWordBookWords || [];
+  wrongBook = state.wrongBookWords || [];
+  errorCounts = state.errorCounts || {};
+
+  if(newWordBook.length === 0){ alert('生词本为空'); return; }
+
+  // Select words
+  const shuffled = [...newWordBook].sort(()=>Math.random()-0.5);
+  testWords = count >= newWordBook.length ? shuffled : shuffled.slice(0, count);
+  roundIndex = 0;
+  currentWordErrors = {};
+  testWords.forEach(w => { currentWordErrors[w.id] = 0; });
+
+  // Show test screen
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('testScreen').style.display = 'flex';
+  document.getElementById('finishScreen').style.display = 'none';
+
+  loadNextWord();
+}
+
+function loadNextWord(){
+  if(currentIndex >= testWords.length){
+    nextRound();
+    return;
+  }
+  currentWord = testWords[currentIndex];
+  isAnswered = false;
+  document.getElementById('chineseDisplay').textContent = currentWord.meaningCN || currentWord.word;
+  document.getElementById('answerInput').value = '';
+  document.getElementById('answerInput').disabled = false;
+  document.getElementById('answerInput').focus();
+  document.getElementById('resultArea').textContent = '';
+  document.getElementById('resultArea').className = 'result-area';
+  updateProgress();
+}
+
+function nextRound(){
+  roundIndex++;
+  if(roundIndex >= 3){
+    finishTest();
+    return;
+  }
+  currentIndex = 0;
+  correctTotal = 0; wrongTotal = 0;
+  loadNextWord();
+}
+
+function finishTest(){
+  const toRemove = [], toKeep = [];
+  testWords.forEach(w=>{
+    const errors = currentWordErrors[w.id] || 0;
+    if(errors < 3) toRemove.push(w);
+    else toKeep.push(w);
+  });
+
+  // Update state
+  const state = loadStateRaw();
+  const removedIds = new Set(toRemove.map(w=>w.id));
+  state.newWordBookWords = (state.newWordBookWords || []).filter(w => {
+    // Only keep words that were in this test AND kept (3 errors), or not in this test
+    if(testWords.some(tw => tw.id === w.id)){
+      return toKeep.some(k => k.id === w.id);
+    }
+    return true;
+  });
+  // Add removed words to wrongBook (if not already there)
+  const wrongIds = new Set((state.wrongBookWords || []).map(w=>w.id));
+  toRemove.forEach(w=>{
+    if(!wrongIds.has(w.id)){
+      state.wrongBookWords = state.wrongBookWords || [];
+      state.wrongBookWords.push(w);
+    }
+  });
+  // Update error counts
+  state.errorCounts = state.errorCounts || {};
+  testWords.forEach(w=>{
+    const errors = currentWordErrors[w.id] || 0;
+    if(errors > 0){
+      state.errorCounts[w.id] = (state.errorCounts[w.id] || 0) + errors;
+    }
+  });
+  saveState(state);
+
+  // Show finish screen
+  document.getElementById('testScreen').style.display = 'none';
+  document.getElementById('finishScreen').style.display = 'flex';
+  const passList = toRemove.map(w => `<div class="finish-item"><span class="word">${w.word} - ${w.meaningCN}</span><span class="status pass">✅ 已掌握</span></div>`).join('');
+  const failList = toKeep.map(w => `<div class="finish-item"><span class="word">${w.word} - ${w.meaningCN}</span><span class="status fail">📌 保留</span></div>`).join('');
+  document.getElementById('finishList').innerHTML = passList + failList;
+  document.getElementById('finishTitle').textContent = `检测完成！✅已掌握 ${toRemove.length} 个 · 📌保留 ${toKeep.length} 个`;
+}
+
+function submitAnswer(){
+  if(!currentWord || isAnswered) return;
+  const answer = document.getElementById('answerInput').value.trim().toLowerCase();
+  isAnswered = true;
+  document.getElementById('answerInput').disabled = true;
+  const correct = answer === currentWord.word.toLowerCase();
+  const result = document.getElementById('resultArea');
+  if(correct){
+    result.textContent = '✅ 正确！';
+    result.className = 'result-area correct';
+    correctTotal++;
+  } else {
+    result.textContent = `❌ 错误！正确答案：${currentWord.word}`;
+    result.className = 'result-area wrong';
+    wrongTotal++;
+    currentWordErrors[currentWord.id] = (currentWordErrors[currentWord.id] || 0) + 1;
+  }
+  updateStats();
+  setTimeout(()=>{ currentIndex++; loadNextWord(); }, 1200);
+}
+
+function updateStats(){
+  document.getElementById('statCorrect').textContent = correctTotal;
+  document.getElementById('statWrong').textContent = wrongTotal;
+}
+
+function updateProgress(){
+  document.getElementById('statProgress').textContent = `${currentIndex + 1}/${testWords.length}`;
+  const pct = testWords.length > 0 ? ((currentIndex) / testWords.length * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('testBanner').textContent = `📝 生词检测：第 ${roundIndex + 1} 轮 / 共 3 轮（${currentIndex + 1}/${testWords.length}）`;
+}
+
+// ---- Init ----
+function init(){
+  loadUserId();
+  const state = loadStateRaw();
+  newWordBook = state.newWordBookWords || [];
+  document.getElementById('setupInfo').innerHTML = `当前生词本共有 <strong style="color:var(--accent);font-size:1.1rem">${newWordBook.length}</strong> 个生词<br>将进行 3 轮检测，每轮检测选中的生词<br>3 轮全错的保留在生词本，答对过的移至错题本`;
+  const countInput = document.getElementById('countInput');
+  countInput.max = newWordBook.length;
+  if(newWordBook.length < 20) countInput.value = newWordBook.length;
+  document.getElementById('startBtn').addEventListener('click', ()=>{
+    let count = parseInt(countInput.value) || 1;
+    if(count > newWordBook.length) count = newWordBook.length;
+    if(count < 1) count = 1;
+    startTest(count);
+  });
+
+  document.getElementById('submitBtn').addEventListener('click', submitAnswer);
+  document.getElementById('answerInput').addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){ e.preventDefault(); submitAnswer(); }
+  });
+  document.getElementById('speakBtn').addEventListener('click', ()=>{
+    if(currentWord) speakWord(currentWord.word);
+  });
+  document.getElementById('exitBtn').addEventListener('click', ()=>{
+    if(confirm('确定退出检测吗？')) location.href = '雅思单词背诵.html';
+  });
+
+  // Dark mode
+  if(localStorage.getItem('darkMode')==='true') document.body.classList.add('dark');
+  document.getElementById('darkToggle').addEventListener('click', ()=>{
+    document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+  });
+
+  // Disable start if empty
+  if(newWordBook.length === 0){
+    document.getElementById('startBtn').disabled = true;
+    document.getElementById('startBtn').textContent = '生词本为空';
+  }
+}
+init();
+</script>
+</body>
+</html>

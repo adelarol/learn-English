@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单词总览 - 雅思单词背诵</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --panel-bg: rgba(255,255,255,0.75);
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --border: #e2e8f0;
+      --accent: #3b82f6;
+      --accent-light: #eff6ff;
+      --correct: #10b981;
+      --wrong: #ef4444;
+      --card-bg: white;
+      --shadow: 0 25px 45px rgba(0,0,0,0.1);
+    }
+    body.dark {
+      --bg: #0f172a;
+      --panel-bg: rgba(30,41,59,0.85);
+      --text: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --border: #334155;
+      --accent: #818cf8;
+      --accent-light: #312e81;
+      --card-bg: #1e293b;
+      --shadow: 0 25px 45px rgba(0,0,0,0.5);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', 'PingFang SC', Roboto, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.3s;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: var(--panel-bg);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,0.15);
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { color: var(--accent); border-color: var(--accent); }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .dark-toggle {
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      padding: 5px;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .chapter-select {
+      padding: 10px 15px;
+      border-radius: 25px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 16px;
+      border-radius: 25px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .search-box:focus { border-color: var(--accent); }
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .stat-badge {
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.78rem;
+    }
+    .stat-badge.total { background: var(--accent-light); color: var(--accent); }
+    .stat-badge.new { background: #fef3c7; color: #92400e; }
+    .stat-badge.wrong { background: #fee2e2; color: #991b1b; }
+    .word-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: calc(100vh - 280px);
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .word-list::-webkit-scrollbar { width: 6px; }
+    .word-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .word-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .word-item:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(59,130,246,0.1); }
+    .word-item .speak-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 4px 8px;
+      border-radius: 8px;
+      color: var(--accent);
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .word-item .speak-btn:hover { background: var(--accent-light); transform: scale(1.15); }
+    .word-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .word-info .word-text {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--text);
+    }
+    .word-info .word-phonetic {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .word-info .word-meaning {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .word-info .word-example {
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-top: 2px;
+      opacity: 0.8;
+    }
+    .word-tags {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .err-badge {
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .status-icon { font-size: 1rem; }
+    .add-btn {
+      border: none;
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .add-btn.not-in-new {
+      background: #f59e0b;
+      color: white;
+    }
+    .add-btn.not-in-new:hover { background: #d97706; }
+    .add-btn.in-new {
+      background: none;
+      border: 1px solid #f59e0b;
+      color: #f59e0b;
+      cursor: default;
+    }
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .detail-panel {
+      display: none;
+      padding: 12px 16px;
+      background: var(--accent-light);
+      border-radius: 10px;
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .detail-panel.show { display: block; }
+    .detail-panel .detail-row { margin-bottom: 4px; }
+    .detail-panel .detail-label { font-weight: 600; color: var(--accent); }
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      .container { padding: 16px; border-radius: 16px; }
+      h1 { font-size: 1.3rem; }
+      .word-item { padding: 10px 12px; gap: 8px; }
+      .word-info .word-text { font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-left">
+      <a class="back-btn" href="雅思单词背诵.html">← 返回</a>
+      <h1>📋 单词总览</h1>
+    </div>
+    <button class="dark-toggle" id="darkModeToggle" title="切换深色模式">🌓</button>
+  </div>
+
+  <div class="controls">
+    <select class="chapter-select" id="chapterSelect"></select>
+    <input type="text" class="search-box" id="searchBox" placeholder="搜索单词或释义...">
+  </div>
+
+  <div class="stats-bar" id="statsBar"></div>
+
+  <div class="word-list" id="wordList"></div>
+</div>
+
+<script>
+let vocabulary = [];
+let currentChapter = 1;
+let newWordBook = [];
+let wrongBook = [];
+let errorCounts = {};
+let activeUserId = 'me';
+
+// ---- User / State ----
+function loadUserId(){
+  activeUserId = localStorage.getItem('vocab-tool-active-user') || 'me';
+}
+
+function loadState(){
+  const raw = localStorage.getItem(`vocab-tool-state:${activeUserId}`);
+  if(!raw) return null;
+  try { return JSON.parse(raw); } catch(e){ return null; }
+}
+
+function saveState(state){
+  localStorage.setItem(`vocab-tool-state:${activeUserId}`, JSON.stringify(state));
+}
+
+function getState(){
+  const state = loadState();
+  if(state){
+    currentChapter = state.chapter || 1;
+    newWordBook = state.newWordBookWords || [];
+    wrongBook = state.wrongBookWords || [];
+    errorCounts = state.errorCounts || {};
+  }
+}
+
+function updateState(){
+  const state = loadState() || {};
+  state.newWordBookWords = newWordBook.map(w=>({id:w.id,word:w.word,phonetic:w.phonetic,pos:w.pos,meaningCN:w.meaningCN,tag:w.tag,root:w.root,exampleEN:w.exampleEN,exampleCN:w.exampleCN,extra:w.extra}));
+  state.wrongBookWords = wrongBook.map(w=>({id:w.id,word:w.word,phonetic:w.phonetic,pos:w.pos,meaningCN:w.meaningCN,tag:w.tag,root:w.root,exampleEN:w.exampleEN,exampleCN:w.exampleCN,extra:w.extra}));
+  state.errorCounts = errorCounts;
+  saveState(state);
+}
+
+// ---- Chapter loading ----
+function loadChapter(chapterId){
+  return new Promise(resolve=>{
+    const old = document.querySelector('script[data-chapter]');
+    if(old) old.remove();
+    vocabulary = [];
+    const script = document.createElement('script');
+    script.src = `./data/data-${chapterId}.js`;
+    script.setAttribute('data-chapter', chapterId);
+    script.onload = ()=>resolve();
+    script.onerror = ()=>{ vocabulary = []; resolve(); };
+    document.head.appendChild(script);
+  });
+}
+
+// ---- TTS ----
+let voices = [], speechReady = false;
+function loadVoices(){
+  return new Promise(resolve=>{
+    if(!('speechSynthesis' in window)) return resolve([]);
+    voices = window.speechSynthesis.getVoices();
+    if(voices.length) resolve(voices);
+    else window.speechSynthesis.addEventListener('voiceschanged', ()=>{ voices = window.speechSynthesis.getVoices(); resolve(voices); }, {once:true});
+  });
+}
+async function initSpeech(){
+  if(speechReady) return true;
+  try{ await loadVoices(); speechReady = true; return true; }catch(e){ return false; }
+}
+let ttsBusy = false;
+async function speakWord(word){
+  if(!('speechSynthesis' in window)) return;
+  await initSpeech();
+  if(ttsBusy) return;
+  ttsBusy = true;
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = 'en-US';
+  const en = voices.filter(v=>v.lang==='en-US').sort((a,b)=>(a.localService?0:1)-(b.localService?0:1));
+  if(en.length) u.voice = en[0];
+  else { const any = voices.filter(v=>v.lang && v.lang.startsWith('en')); if(any.length) u.voice = any[0]; }
+  u.rate = 0.9;
+  u.onend = ()=>{ ttsBusy = false; };
+  u.onerror = ()=>{ ttsBusy = false; };
+  window.speechSynthesis.speak(u);
+}
+
+// ---- Render ----
+function renderChapterSelect(){
+  const sel = document.getElementById('chapterSelect');
+  sel.innerHTML = Array.from({length:22},(_,i)=>`<option value="${i+1}" ${i+1===currentChapter?'selected':''}>第 ${i+1} 章</option>`).join('');
+}
+
+function renderStats(){
+  const total = vocabulary.length;
+  const newCount = vocabulary.filter(w=>newWordBook.some(nw=>nw.id===w.id)).length;
+  const wrongCount = vocabulary.filter(w=>wrongBook.some(wb=>wb.id===w.id)).length;
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-item">📊 共 <span class="stat-badge total">${total}</span> 词</div>
+    <div class="stat-item">⭐ 生词本 <span class="stat-badge new">${newCount}</span></div>
+    <div class="stat-item">❌ 错题本 <span class="stat-badge wrong">${wrongCount}</span></div>
+  `;
+}
+
+function renderList(){
+  const query = document.getElementById('searchBox').value.toLowerCase().trim();
+  const filtered = vocabulary.filter(w=>
+    !query || w.word.toLowerCase().includes(query) || (w.meaningCN||'').includes(query)
+  );
+  const list = document.getElementById('wordList');
+  if(filtered.length === 0){
+    list.innerHTML = '<div class="empty">没有匹配的单词</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(w=>{
+    const inNew = newWordBook.some(nw=>nw.id===w.id);
+    const inWrong = wrongBook.some(wb=>wb.id===w.id);
+    let statusIcon = inNew ? '⭐' : (inWrong ? '❌' : '✅');
+    const ec = inNew ? 0 : (errorCounts[w.id]||0);
+    const errBadge = ec > 0 ? `<span class="err-badge">${ec}错</span>` : '';
+    const addBtn = inNew
+      ? '<button class="add-btn in-new">已收录</button>'
+      : `<button class="add-btn not-in-new" data-id="${w.id}">+生词</button>`;
+    return `<div class="word-item" data-id="${w.id}">
+      <button class="speak-btn" data-word="${w.word}">🔊</button>
+      <div class="word-info">
+        <span class="word-text">${w.word}</span>
+        <span class="word-phonetic">${w.phonetic||''} ${w.pos||''}</span>
+        <span class="word-meaning">${w.meaningCN||''}</span>
+        <span class="word-example">${w.exampleEN||''} ${w.exampleCN||''}</span>
+      </div>
+      <div class="word-tags">
+        ${errBadge}
+        <span class="status-icon">${statusIcon}</span>
+        ${addBtn}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Bind events
+  document.querySelectorAll('.speak-btn').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
+      speakWord(btn.dataset.word);
+    });
+  });
+  document.querySelectorAll('.word-item').forEach(item=>{
+    item.addEventListener('click', e=>{
+      if(e.target.classList.contains('speak-btn') || e.target.classList.contains('add-btn')) return;
+      const word = item.dataset.word || vocabulary.find(w=>w.id==item.dataset.id)?.word;
+      if(word) speakWord(word);
+    });
+  });
+  document.querySelectorAll('.add-btn.not-in-new').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.id);
+      const word = vocabulary.find(w=>w.id===id);
+      if(!word) return;
+      if(!newWordBook.some(w=>w.id===id)){
+        newWordBook.push(word);
+        wrongBook = wrongBook.filter(w=>w.id!==id);
+        updateState();
+        renderStats();
+        renderList();
+      }
+    });
+  });
+}
+
+// ---- Init ----
+async function init(){
+  loadUserId();
+  getState();
+  renderChapterSelect();
+  await loadChapter(currentChapter);
+  renderStats();
+  renderList();
+
+  document.getElementById('chapterSelect').addEventListener('change', async e=>{
+    currentChapter = parseInt(e.target.value);
+    await loadChapter(currentChapter);
+    renderStats();
+    renderList();
+  });
+  document.getElementById('searchBox').addEventListener('input', renderList);
+
+  // Dark mode
+  const darkToggle = document.getElementById('darkModeToggle');
+  if(localStorage.getItem('darkMode')==='true') document.body.classList.add('dark');
+  darkToggle.addEventListener('click', ()=>{
+    document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+  });
+
+  // Auto refresh when returning to this page
+  window.addEventListener('focus', ()=>{
+    getState();
+    renderStats();
+    renderList();
+  });
+}
+
+init();
+</script>
+</body>
+</html>

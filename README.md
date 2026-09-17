@@ -91,8 +91,6 @@ npx http-server -p 8000
 
 ## 截图
 
-> 截图请放入 `docs/screenshots/` 目录，并替换下方占位。
-
 ### 首页 Hero
 
 ![首页 Hero](docs/screenshots/hero.png)

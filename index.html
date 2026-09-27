@@ -74,8 +74,8 @@
     /* Learning path */
     .path {
       max-width: 1100px;
-      margin: 0 auto 100px;
-      padding: 0 28px;
+      margin: 0 auto 80px;
+      padding: 80px 28px 0;
     }
     .path-head {
       text-align: center;
@@ -93,34 +93,47 @@
       font-weight: 800;
       letter-spacing: -0.01em;
     }
+    /* 滚动触发动画（CSS过渡，可靠兼容） */
+    .gsap-reveal {
+      opacity: 0.6;
+      transform: scale(0.98) translateY(10px);
+      filter: blur(1px);
+      transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;
+    }
+    .gsap-reveal.in {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      filter: blur(0);
+    }
     .path-steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
       position: relative;
+      max-width: 900px;
+      margin: 0 auto;
     }
     .path-steps::before {
       content: '';
       position: absolute;
-      top: 36px;
-      left: 12%;
-      right: 12%;
+      top: 28px;
+      left: 80px;
+      right: 80px;
       height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(245,194,107,0.25), rgba(59,130,246,0.25), transparent);
+      background: linear-gradient(90deg, rgba(245,194,107,0.3), rgba(59,130,246,0.3));
+      z-index: 0;
     }
     .step {
+      flex: 1;
       text-align: center;
-      padding: 24px;
-      border-radius: 20px;
-      background: var(--card-bg);
-      border: 1px solid rgba(255,255,255,0.06);
+      padding: 0 16px;
       position: relative;
       z-index: 1;
     }
     .step-num {
       width: 56px;
       height: 56px;
-      margin: 0 auto 18px;
+      margin: 0 auto 14px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -130,16 +143,23 @@
       background: linear-gradient(135deg, var(--accent) 0%, #f59e0b 100%);
       color: #0b1020;
       box-shadow: 0 8px 24px var(--accent-glow);
+      position: relative;
+    }
+    .step-icon {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
     }
     .step h4 {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     .step p {
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       color: var(--fg-muted);
-      line-height: 1.7;
+      line-height: 1.6;
+      max-width: 220px;
+      margin: 0 auto;
     }
     a { color: inherit; text-decoration: none; }
 
@@ -231,8 +251,8 @@
     /* ============ CARDS ============ */
     .tools {
       max-width: 1280px;
-      margin: 0 auto 120px;
-      padding: 0 28px;
+      margin: 0 auto 80px;
+      padding: 80px 28px 0;
     }
     .tools-head {
       text-align: center;
@@ -295,15 +315,20 @@
     }
     .tools-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
     }
     .card {
       position: relative;
       overflow: hidden;
       border-radius: 24px;
-      padding: 36px;
-      min-height: 340px;
+      padding: 32px;
+      min-height: 300px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -347,6 +372,16 @@
     .card.yilin {
       background:
         linear-gradient(135deg, rgba(52,211,153,0.18) 0%, rgba(16,185,129,0.10) 50%, rgba(34,197,94,0.16) 100%),
+        linear-gradient(180deg, #0f172a 0%, #0b1020 100%);
+    }
+    .card.shadow {
+      background:
+        linear-gradient(135deg, rgba(139,92,246,0.18) 0%, rgba(168,85,247,0.10) 50%, rgba(192,132,252,0.16) 100%),
+        linear-gradient(180deg, #0f172a 0%, #0b1020 100%);
+    }
+    .card.textbook-combined {
+      background:
+        linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(249,115,22,0.08) 50%, rgba(239,68,68,0.12) 100%),
         linear-gradient(180deg, #0f172a 0%, #0b1020 100%);
     }
     .card-top {
@@ -478,7 +513,175 @@
       transform: translateX(4px);
     }
 
+    /* 课本单词合并卡片 - 双按钮 */
+    .card.textbook-combined {
+      cursor: default;
+    }
+    .card-foot.dual-actions {
+      display: flex;
+      gap: 12px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .sub-action {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--fg);
+      transition: all 0.3s ease;
+    }
+    .sub-action:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    .sub-action.college:hover {
+      border-color: #fcd34d;
+      box-shadow: 0 8px 24px rgba(252, 211, 77, 0.15);
+    }
+    .sub-action.yilin:hover {
+      border-color: #6ee7b7;
+      box-shadow: 0 8px 24px rgba(110, 231, 183, 0.15);
+    }
+    .sub-icon {
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+    }
+    .sub-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sub-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .sub-desc {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+    .sub-arrow {
+      font-size: 1.1rem;
+      opacity: 0.5;
+      transition: all 0.3s ease;
+    }
+    .sub-action:hover .sub-arrow {
+      opacity: 1;
+      transform: translateX(4px);
+    }
+
     /* ============ FOOTER ============ */
+    /* 弹窗样式 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: linear-gradient(180deg, #1a1f2e 0%, #0f1428 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .modal-header h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .modal-close:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .textbook-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .textbook-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 24px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+    .textbook-item:hover:not(.disabled) {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
+    }
+    .textbook-item.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .textbook-icon {
+      font-size: 2rem;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+    }
+    .textbook-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .textbook-desc {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+
     .footer {
       border-top: 1px solid rgba(255,255,255,0.06);
       padding: 36px 28px 48px;
@@ -752,8 +955,8 @@
     <div class="nav-links">
       <a class="nav-link" href="雅思单词背诵.html">📚 <span class="only-pc">雅思刷词</span></a>
       <a class="nav-link" href="雅思听力刷题.html">🎧 <span class="only-pc">雅思听力</span></a>
-      <a class="nav-link" href="提高英语4单词.html">📖 <span class="only-pc">课内单词</span></a>
-      <a class="nav-link" href="译林八年级单词.html">📘 <span class="only-pc">译林八年级</span></a>
+      <a class="nav-link" href="跟读练习.html">🗣️ <span class="only-pc">跟读练习</span></a>
+      <a class="nav-link" href="#" onclick="openTextbookModal(); return false;">📖 <span class="only-pc">课本词汇</span></a>
       <a class="nav-link primary" href="雅思单词背诵.html">开始学习</a>
     </div>
   </nav>
@@ -821,26 +1024,29 @@
 
 
   <!-- ===== LEARNING PATH ===== -->
-  <section class="path reveal">
-    <div class="path-head">
-      <div class="path-eyebrow">How It Works</div>
-      <h2 class="path-title">三步开始学习</h2>
+  <section class="path">
+    <div class="path-head gsap-reveal" data-delay="0">
+      <div class="path-eyebrow">Features</div>
+      <h2 class="path-title">多元学习功能</h2>
     </div>
     <div class="path-steps">
-      <div class="step">
+      <div class="step gsap-reveal" style="transition-delay: 0.1s">
         <div class="step-num">1</div>
-        <h4>选模块</h4>
-        <p>雅思选章节背单词或刷听力，课内选课本词条自测。每个模块独立运行、进度自动保存。</p>
+        <div class="step-icon">📚</div>
+        <h4>多元词库</h4>
+        <p>雅思22章核心词汇、各阶段教材单词、剑桥听力语料，覆盖备考与课堂多场景</p>
       </div>
-      <div class="step">
+      <div class="step gsap-reveal" style="transition-delay: 0.2s">
         <div class="step-num">2</div>
-        <h4>自测记录</h4>
-        <p>看英语想中文，选「认识」或「不认识」。记错了还能点「记错了」补录到不会词本，系统自动归类。</p>
+        <div class="step-icon">✏️</div>
+        <h4>智能检测</h4>
+        <p>「认识 / 不认识」快速判断，错词自动归档生词本，支持手动增删改</p>
       </div>
-      <div class="step">
+      <div class="step gsap-reveal" style="transition-delay: 0.3s">
         <div class="step-num">3</div>
-        <h4>专项攻克</h4>
-        <p>不会的单词进入专属词本，可反复检测、手动增删改，直到全部攻克。错题按错误次数排序，精准复习。</p>
+        <div class="step-icon">🎯</div>
+        <h4>精准复习</h4>
+        <p>按错误次数排序优先级，生词本反复检测，直到完全掌握</p>
       </div>
     </div>
   </section>
@@ -853,118 +1059,132 @@
       <p class="tools-desc">覆盖雅思备考与大学课内英语的词汇、听力训练，记录你的每一点进步</p>
     </div>
 
-    <!-- 雅思 -->
-    <div class="tool-group">
-      <div class="group-head">
-        <span class="group-eyebrow">IELTS · 雅思备考</span>
-        <h3 class="group-title">雅思</h3>
-        <span class="divider"></span>
-        <p class="group-desc">围绕雅思考试的单词与听力训练，按章节推进、错题专项巩固。</p>
-      </div>
-      <div class="tools-grid">
-        <!-- 词汇卡片 -->
-        <a class="card vocab" href="雅思单词背诵.html" onmousemove="const rect=this.getBoundingClientRect();this.style.setProperty('--mx',(event.clientX-rect.left)+'px');this.style.setProperty('--my',(event.clientY-rect.top)+'px');">
+    <!-- 核心工具 2×2 网格 -->
+    <div class="tools-grid">
+      <!-- 雅思单词 -->
+      <a class="card vocab" href="雅思单词背诵.html" onmousemove="const rect=this.getBoundingClientRect();this.style.setProperty('--mx',(event.clientX-rect.left)+'px');this.style.setProperty('--my',(event.clientY-rect.top)+'px');">
+        <div class="card-top">
+          <div class="card-num">01 · Vocabulary</div>
+          <div class="card-icon">📚</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">雅思单词背诵</h3>
+          <p class="card-desc">22 章雅思核心词汇带背。看中文默写英文，自由输入不限长度；错题自动归档，可按错误次数筛选做专项检测；生词本支持 3 轮强化检测；单词总览支持发音与一键收录。</p>
+          <div class="card-tags">
+            <span class="card-tag">22 章分级学习</span>
+            <span class="card-tag">错题筛选检测</span>
+            <span class="card-tag">生词本 3 轮强化</span>
+            <span class="card-tag">单词总览发音</span>
+          </div>
+        </div>
+        <div class="card-foot">
+          <div class="card-action">进入学习</div>
+          <div class="card-arrow">→</div>
+        </div>
+      </a>
 
-          <div class="card-top">
-            <div class="card-num">01 · Vocabulary</div>
-            <div class="card-icon">📚</div>
+      <!-- 雅思听力 -->
+      <a class="card listen" href="雅思听力刷题.html" onmousemove="const rect=this.getBoundingClientRect();this.style.setProperty('--mx',(event.clientX-rect.left)+'px');this.style.setProperty('--my',(event.clientY-rect.top)+'px');">
+        <div class="card-top">
+          <div class="card-num">02 · Listening</div>
+          <div class="card-icon">🎧</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">雅思听力刷题</h3>
+          <p class="card-desc">分题型的雅思听力刷题训练，模拟真实考试节奏，逐题作答、回顾答案，精听每一道真题，突破听力瓶颈。</p>
+          <div class="card-tags">
+            <span class="card-tag">分题型训练</span>
+            <span class="card-tag">真题练习</span>
+            <span class="card-tag">模拟考试</span>
+            <span class="card-tag">答题回顾</span>
           </div>
-          <div class="card-body">
-            <h3 class="card-title">雅思单词背诵</h3>
-            <p class="card-desc">22 章雅思核心词汇带背。看中文默写英文，自由输入不限长度；错题自动归档，可按错误次数筛选做专项检测；生词本支持 3 轮强化检测；单词总览支持发音与一键收录。</p>
-            <div class="card-tags">
-              <span class="card-tag">22 章分级学习</span>
-              <span class="card-tag">错题筛选检测</span>
-              <span class="card-tag">生词本 3 轮强化</span>
-              <span class="card-tag">单词总览发音</span>
-            </div>
-          </div>
-          <div class="card-foot">
-            <div class="card-action">进入学习</div>
-            <div class="card-arrow">→</div>
-          </div>
-        </a>
+        </div>
+        <div class="card-foot">
+          <div class="card-action">进入训练</div>
+          <div class="card-arrow">→</div>
+        </div>
+      </a>
 
-        <!-- 听力卡片 -->
-        <a class="card listen" href="雅思听力刷题.html" onmousemove="const rect=this.getBoundingClientRect();this.style.setProperty('--mx',(event.clientX-rect.left)+'px');this.style.setProperty('--my',(event.clientY-rect.top)+'px');">
+      <!-- 跟读练习 -->
+      <a class="card shadow" href="跟读练习.html" onmousemove="const rect=this.getBoundingClientRect();this.style.setProperty('--mx',(event.clientX-rect.left)+'px');this.style.setProperty('--my',(event.clientY-rect.top)+'px');">
+        <div class="card-top">
+          <div class="card-num">03 · Shadowing</div>
+          <div class="card-icon">🗣️</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">跟读练习</h3>
+          <p class="card-desc">剑桥雅思听力逐句跟读训练。点句播放、逐句精听，支持生词摘抄和影子跟读模式，提升听口同步能力。</p>
+          <div class="card-tags">
+            <span class="card-tag">逐句点读</span>
+            <span class="card-tag">生词摘抄</span>
+            <span class="card-tag">影子跟读</span>
+            <span class="card-tag">调速循环</span>
+          </div>
+        </div>
+        <div class="card-foot">
+          <div class="card-action">进入训练</div>
+          <div class="card-arrow">→</div>
+        </div>
+      </a>
 
-          <div class="card-top">
-            <div class="card-num">02 · Listening</div>
-            <div class="card-icon">🎧</div>
+      <!-- 课本词汇卡片（弹窗选择器） -->
+      <div class="card textbook-combined" onclick="openTextbookModal()" onmousemove="const rect=this.getBoundingClientRect();this.style.setProperty('--mx',(event.clientX-rect.left)+'px');this.style.setProperty('--my',(event.clientY-rect.top)+'px');">
+        <div class="card-top">
+          <div class="card-num">04 · Textbook</div>
+          <div class="card-icon">📖</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">课本词汇</h3>
+          <p class="card-desc">同步各阶段教材词汇，支持学习模式和检测模式，错词自动归档专项攻克。</p>
+          <div class="card-tags">
+            <span class="card-tag">小学</span>
+            <span class="card-tag">初中</span>
+            <span class="card-tag">高中</span>
+            <span class="card-tag">大学</span>
           </div>
-          <div class="card-body">
-            <h3 class="card-title">雅思听力刷题</h3>
-            <p class="card-desc">分题型的雅思听力刷题训练，模拟真实考试节奏，逐题作答、回顾答案，精听每一道真题，突破听力瓶颈。</p>
-            <div class="card-tags">
-              <span class="card-tag">分题型训练</span>
-              <span class="card-tag">真题练习</span>
-              <span class="card-tag">模拟考试</span>
-              <span class="card-tag">答题回顾</span>
-            </div>
-          </div>
-          <div class="card-foot">
-            <div class="card-action">进入训练</div>
-            <div class="card-arrow">→</div>
-          </div>
-        </a>
-      </div>
-    </div>
-
-    <!-- 课本单词：大学 + 初中同步课堂词汇 -->
-    <div class="tool-group">
-      <div class="group-head">
-        <span class="group-eyebrow">Textbook · 课堂同步</span>
-        <h3 class="group-title">课本单词</h3>
-        <span class="divider"></span>
-        <p class="group-desc">同步课堂课本的词汇自测：大学《提高英语4》与初中译林八年级，按册分单元推进，错词自动归档、专项攻克。</p>
-      </div>
-      <div class="tools-grid">
-        <!-- 课内单词卡片 -->
-        <a class="card course" href="提高英语4单词.html" onmousemove="const rect=this.getBoundingClientRect();this.style.setProperty('--mx',(event.clientX-rect.left)+'px');this.style.setProperty('--my',(event.clientY-rect.top)+'px');">
-          <div class="card-top">
-            <div class="card-num">03 · College English</div>
-            <div class="card-icon">📖</div>
-          </div>
-          <div class="card-body">
-            <h3 class="card-title">提高英语4 单词</h3>
-            <p class="card-desc">整理自课本《提高英语4》的全部词汇与短语。学习模式看英语记释义、点喇叭听发音；检测模式只给英语，选「认识 / 不认识」，不认识的单词自动进入不会词本，可专门反复检测，也能手动添加、修改释义和删除。</p>
-            <div class="card-tags">
-              <span class="card-tag">课本词汇短语</span>
-              <span class="card-tag">认识 / 不认识自测</span>
-              <span class="card-tag">不会词本专项检测</span>
-              <span class="card-tag">手动删改</span>
-            </div>
-          </div>
-          <div class="card-foot">
-            <div class="card-action">进入学习</div>
-            <div class="card-arrow">→</div>
-          </div>
-        </a>
-
-        <!-- 译林八年级单词卡片 -->
-        <a class="card yilin" href="译林八年级单词.html" onmousemove="const rect=this.getBoundingClientRect();this.style.setProperty('--mx',(event.clientX-rect.left)+'px');this.style.setProperty('--my',(event.clientY-rect.top)+'px');">
-          <div class="card-top">
-            <div class="card-num">04 · Yilin Grade 8</div>
-            <div class="card-icon">📘</div>
-          </div>
-          <div class="card-body">
-            <h3 class="card-title">译林八年级 单词</h3>
-            <p class="card-desc">译林牛津版八年级上册、下册全部词汇。按单元选择学习，支持看中文默写英文、看英语回忆释义；检测模式选「认识 / 不认识」，不认识自动收录进错词本，可反复检测并手动增删改。所有单词可一键总览、点喇叭听发音。</p>
-            <div class="card-tags">
-              <span class="card-tag">上 / 下册分单元</span>
-              <span class="card-tag">翻译默写检测</span>
-              <span class="card-tag">错词本专项攻克</span>
-              <span class="card-tag">手动增删改</span>
-            </div>
-          </div>
-          <div class="card-foot">
-            <div class="card-action">进入学习</div>
-            <div class="card-arrow">→</div>
-          </div>
-        </a>
+        </div>
+        <div class="card-foot">
+          <div class="card-action">选择教材</div>
+          <div class="card-arrow">→</div>
+        </div>
       </div>
     </div>
   </section>
+
+  <!-- 教材选择弹窗 -->
+  <div class="modal-overlay" id="textbookModal" onclick="closeTextbookModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>选择教材</h3>
+        <button class="modal-close" onclick="closeTextbookModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="textbook-grid">
+          <a href="译林八年级单词.html" class="textbook-item">
+            <span class="textbook-icon">📘</span>
+            <span class="textbook-name">译林版八年级</span>
+            <span class="textbook-desc">初中英语</span>
+          </a>
+          <a href="提高英语4单词.html" class="textbook-item">
+            <span class="textbook-icon">🎓</span>
+            <span class="textbook-name">提高英语4</span>
+            <span class="textbook-desc">大学英语</span>
+          </a>
+          <!-- 后续可添加更多教材 -->
+          <div class="textbook-item disabled">
+            <span class="textbook-icon">📕</span>
+            <span class="textbook-name">人教版小学</span>
+            <span class="textbook-desc">即将上线</span>
+          </div>
+          <div class="textbook-item disabled">
+            <span class="textbook-icon">📗</span>
+            <span class="textbook-name">人教版高中</span>
+            <span class="textbook-desc">即将上线</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
@@ -974,8 +1194,8 @@
         <a href="index.html">主页</a>
         <a href="雅思单词背诵.html">雅思单词</a>
         <a href="雅思听力刷题.html">雅思听力</a>
-        <a href="提高英语4单词.html">课内单词</a>
-        <a href="译林八年级单词.html">译林八年级</a>
+        <a href="跟读练习.html">跟读练习</a>
+        <a href="#" onclick="openTextbookModal(); return false;">课本词汇</a>
       </div>
     </div>
   </footer>
@@ -995,6 +1215,17 @@
     }),
     // markers:true
   });
+
+    // ===== 滚动触发动画（IntersectionObserver + CSS过渡） =====
+    const gsapObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          gsapObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.gsap-reveal').forEach(el => gsapObserver.observe(el));
 
     // Scroll reveal animation
     const io = new IntersectionObserver((entries) => {
@@ -1028,6 +1259,22 @@
 
     courseBtn.addEventListener('mouseenter', () => showCard(courseCard));
     courseBtn.addEventListener('mouseleave', hideCards);
+
+    // 教材选择弹窗
+    function openTextbookModal() {
+      document.getElementById('textbookModal').classList.add('active');
+    }
+    function closeTextbookModal(e) {
+      if (!e || e.target.id === 'textbookModal') {
+        document.getElementById('textbookModal').classList.remove('active');
+      }
+    }
+    // ESC关闭弹窗
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.getElementById('textbookModal').classList.remove('active');
+      }
+    });
   </script>
 
 </body>

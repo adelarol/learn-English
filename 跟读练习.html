@@ -7,17 +7,6 @@
     <style>
         /* 主题变量 */
         :root {
-            --bg-primary: #0f1428;
-            --bg-secondary: rgba(255, 255, 255, 0.03);
-            --bg-tertiary: rgba(255, 255, 255, 0.08);
-            --text-primary: #e8eaf6;
-            --text-secondary: rgba(232, 234, 246, 0.6);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --accent: #4a6cf7;
-            --accent-glow: rgba(74, 108, 247, 0.4);
-        }
-
-        [data-theme="light"] {
             --bg-primary: #f5f7fa;
             --bg-secondary: rgba(0, 0, 0, 0.03);
             --bg-tertiary: rgba(0, 0, 0, 0.08);
@@ -26,6 +15,17 @@
             --border-color: rgba(0, 0, 0, 0.08);
             --accent: #4a6cf7;
             --accent-glow: rgba(74, 108, 247, 0.2);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f1428;
+            --bg-secondary: rgba(255, 255, 255, 0.03);
+            --bg-tertiary: rgba(255, 255, 255, 0.08);
+            --text-primary: #e8eaf6;
+            --text-secondary: rgba(232, 234, 246, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent: #4a6cf7;
+            --accent-glow: rgba(74, 108, 247, 0.4);
         }
 
         * {
@@ -578,6 +578,7 @@
             display: none;
         }
     </style>
+<script src="user.js"></script>
 </head>
 <body>
     <div class="top-bar">
@@ -729,7 +730,7 @@
 
         // 主题切换
         function initTheme() {
-            const saved = localStorage.getItem('shadowTheme') || 'dark';
+            const saved = localStorage.getItem('shadowTheme') || 'light';
             document.documentElement.setAttribute('data-theme', saved);
             updateThemeIcon(saved);
         }

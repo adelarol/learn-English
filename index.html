@@ -40,11 +40,171 @@
       overflow-x: hidden;
     }
 
+    /* 用户切换弹窗 */
+    .user-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .user-modal.active {
+      display: flex;
+    }
+    .user-modal-content {
+      background: var(--bg-alt);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+    .user-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .user-modal-header h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--fg);
+    }
+    .user-modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: var(--card-bg);
+      border-radius: 8px;
+      color: var(--fg-muted);
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .user-modal-close:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--fg);
+    }
+    .user-input-group {
+      margin-bottom: 20px;
+    }
+    .user-input-group label {
+      display: block;
+      font-size: 0.875rem;
+      color: var(--fg-muted);
+      margin-bottom: 8px;
+    }
+    .user-input-group input,
+    .user-input-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      background: var(--card-bg);
+      color: var(--fg);
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .user-input-group input:focus,
+    .user-input-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .user-input-group select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+    }
+    .user-input-group select option {
+      background: var(--bg-alt);
+      color: var(--fg);
+    }
+    .user-select-row {
+      display: flex;
+      gap: 8px;
+    }
+    .user-select-row select {
+      flex: 1;
+    }
+    .user-btn-danger {
+      width: 44px;
+      padding: 0;
+      background: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+      border: 1px solid rgba(220, 53, 69, 0.3);
+      font-size: 1.1rem;
+    }
+    .user-btn-danger:hover {
+      background: rgba(220, 53, 69, 0.2);
+      border-color: rgba(220, 53, 69, 0.5);
+    }
+    .user-btn-danger:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .user-current {
+      padding: 16px;
+      background: var(--card-bg);
+      border-radius: 10px;
+      margin-bottom: 24px;
+      font-size: 0.9375rem;
+      color: var(--fg-muted);
+    }
+    .user-current strong {
+      color: var(--accent);
+      margin-left: 8px;
+    }
+    .user-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .user-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .user-btn-secondary {
+      background: var(--card-bg);
+      color: var(--fg-muted);
+      border: 1px solid var(--card-border);
+    }
+    .user-btn-secondary:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--fg);
+    }
+    .user-btn-primary {
+      background: var(--accent);
+      color: #1a1a2e;
+    }
+    .user-btn-primary:hover {
+      background: #f0b558;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
     /* Scroll reveal */
     .reveal {
       opacity: 0;
       transform: translateY(30px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      transition: opacity 0.8s cubic-bezier(0.2, 0, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0, 0.2, 1);
     }
     .reveal.in {
       opacity: 1;
@@ -98,7 +258,7 @@
       opacity: 0.6;
       transform: scale(0.98) translateY(10px);
       filter: blur(1px);
-      transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;
+      transition: opacity 0.5s cubic-bezier(0.2, 0, 0.2, 1), transform 0.5s cubic-bezier(0.2, 0, 0.2, 1), filter 0.5s cubic-bezier(0.2, 0, 0.2, 1);
     }
     .gsap-reveal.in {
       opacity: 1;
@@ -942,6 +1102,7 @@
 <!--放到页面head或者body末尾-->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
+<script src="user.js"></script>
 
 
 <body>
@@ -957,9 +1118,48 @@
       <a class="nav-link" href="雅思听力刷题.html">🎧 <span class="only-pc">雅思听力</span></a>
       <a class="nav-link" href="跟读练习.html">🗣️ <span class="only-pc">跟读练习</span></a>
       <a class="nav-link" href="#" onclick="openTextbookModal(); return false;">📖 <span class="only-pc">课本词汇</span></a>
+      <a class="nav-link" href="#" onclick="openUserModal(); return false;" id="userNavLink">👤 <span class="only-pc" id="currentUserText">默认用户</span></a>
       <a class="nav-link primary" href="雅思单词背诵.html">开始学习</a>
     </div>
   </nav>
+
+  <!-- 用户切换弹窗 -->
+  <div class="user-modal" id="userModal">
+    <div class="user-modal-content">
+      <div class="user-modal-header">
+        <h3>切换用户</h3>
+        <button class="user-modal-close" onclick="closeUserModal()">×</button>
+      </div>
+      <div class="user-modal-body">
+        <!-- 已有用户下拉选择 -->
+        <div class="user-input-group" id="existingUserGroup" style="display: none;">
+          <label>选择已有用户</label>
+          <div class="user-select-row">
+            <select id="existingUserSelect" onchange="onExistingUserChange()">
+              <option value="">-- 选择用户 --</option>
+            </select>
+            <button class="user-btn user-btn-danger" id="deleteUserBtn" onclick="deleteSelectedUser()" title="删除选中用户">🗑️</button>
+          </div>
+        </div>
+
+        <!-- 新建用户输入 -->
+        <div class="user-input-group">
+          <label id="newUserLabel">新建用户</label>
+          <input type="text" id="userNameInput" placeholder="输入新用户名" maxlength="20">
+        </div>
+
+        <div class="user-current">
+          <span>当前用户：</span>
+          <strong id="modalCurrentUser">默认用户</strong>
+        </div>
+
+        <div class="user-actions">
+          <button class="user-btn user-btn-secondary" onclick="switchToDefault()">默认用户</button>
+          <button class="user-btn user-btn-primary" onclick="confirmSwitchUser()">确认切换</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== HERO ===== -->
   <section class="hero-pin-wrap">
@@ -1235,7 +1435,7 @@
           io.unobserve(e.target);
         }
       });
-    }, { threshold: 0.12 });
+    }, { threshold: 0, rootMargin: '0px 0px 200px 0px' });
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
     // ===== hero 切换区：描述文字始终保留，悬浮按钮只显示/隐藏卡片 =====
@@ -1273,8 +1473,156 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         document.getElementById('textbookModal').classList.remove('active');
+        document.getElementById('userModal').classList.remove('active');
       }
     });
+
+    // ===== 用户切换功能 =====
+    function initUserDisplay() {
+      const user = window.getCurrentUser ? window.getCurrentUser() : 'default';
+      const displayName = user === 'default' ? '默认用户' : user;
+      document.getElementById('currentUserText').textContent = displayName;
+      document.getElementById('modalCurrentUser').textContent = displayName;
+    }
+
+    // 从 localStorage 获取所有已有用户
+    function getExistingUsers() {
+      const users = new Set();
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.includes('_')) {
+          // 提取 key 中最后一个 _ 后面的部分作为用户名
+          const parts = key.split('_');
+          const username = parts[parts.length - 1];
+          // 排除默认数据的 key（如 vocab-tool-state:me，最后一段含冒号）
+          if (username && username !== 'default' && !username.includes(':')) {
+            users.add(username);
+          }
+        }
+      }
+      return Array.from(users).sort();
+    }
+
+    // 填充已有用户下拉框
+    function populateExistingUsers() {
+      const users = getExistingUsers();
+      const select = document.getElementById('existingUserSelect');
+      const group = document.getElementById('existingUserGroup');
+      const deleteBtn = document.getElementById('deleteUserBtn');
+
+      // 清空旧选项（保留第一个）
+      while (select.options.length > 1) {
+        select.remove(1);
+      }
+
+      if (users.length > 0) {
+        group.style.display = 'block';
+        users.forEach(user => {
+          const option = document.createElement('option');
+          option.value = user;
+          option.textContent = user;
+          select.appendChild(option);
+        });
+        // 重置删除按钮状态
+        deleteBtn.disabled = true;
+      } else {
+        group.style.display = 'none';
+      }
+    }
+
+    // 选择已有用户时，自动填充到输入框并启用删除按钮
+    function onExistingUserChange() {
+      const select = document.getElementById('existingUserSelect');
+      const input = document.getElementById('userNameInput');
+      const deleteBtn = document.getElementById('deleteUserBtn');
+      if (select.value) {
+        input.value = select.value;
+        deleteBtn.disabled = false;
+        input.focus();
+      } else {
+        deleteBtn.disabled = true;
+      }
+    }
+
+    // 删除选中用户的所有数据
+    function deleteSelectedUser() {
+      const select = document.getElementById('existingUserSelect');
+      const username = select.value;
+      if (!username) {
+        alert('请先选择要删除的用户');
+        return;
+      }
+
+      if (!confirm(`确定要删除用户「${username}」的所有数据吗？此操作不可恢复！`)) {
+        return;
+      }
+
+      // 收集要删除的 keys
+      const suffix = `_${username}`;
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.endsWith(suffix)) {
+          keysToRemove.push(key);
+        }
+      }
+
+      // 删除所有相关数据
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+
+      alert(`已删除用户「${username}」的 ${keysToRemove.length} 条数据`);
+
+      // 如果删除的是当前用户，跳转到默认用户
+      const currentUser = window.getCurrentUser ? window.getCurrentUser() : 'default';
+      if (currentUser === username) {
+        switchToDefault();
+      } else {
+        // 刷新下拉框
+        populateExistingUsers();
+        document.getElementById('userNameInput').value = '';
+      }
+    }
+
+    function openUserModal() {
+      document.getElementById('userModal').classList.add('active');
+      populateExistingUsers();
+      document.getElementById('userNameInput').focus();
+    }
+
+    function closeUserModal() {
+      document.getElementById('userModal').classList.remove('active');
+      document.getElementById('userNameInput').value = '';
+      document.getElementById('existingUserSelect').value = '';
+    }
+
+    function confirmSwitchUser() {
+      const input = document.getElementById('userNameInput');
+      const username = input.value.trim();
+      if (!username) {
+        alert('请输入用户名');
+        return;
+      }
+      // 跳转到带用户参数的 URL
+      const url = new URL(location.href);
+      url.searchParams.set('user', username);
+      location.href = url.toString();
+    }
+
+    function switchToDefault() {
+      const url = new URL(location.href);
+      url.searchParams.delete('user');
+      location.href = url.toString();
+    }
+
+    // 回车确认切换
+    document.getElementById('userNameInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        confirmSwitchUser();
+      }
+    });
+
+    // 初始化显示当前用户
+    initUserDisplay();
   </script>
 
 </body>

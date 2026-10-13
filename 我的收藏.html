@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的收藏 - 跟读练习</title>
+    <script src="user.js"></script>
+    <style>
+        :root {
+            --bg: #f5f7fa;
+            --bg-alt: #ffffff;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --fg: #1a202c;
+            --fg-muted: #64748b;
+            --accent: #4a6cf7;
+            --border-color: #e2e8f0;
+            --bg-secondary: #f1f5f9;
+            --bg-tertiary: #e2e8f0;
+            --text-primary: #1a202c;
+            --text-secondary: #64748b;
+        }
+        [data-theme="dark"] {
+            --bg: #0f1428;
+            --bg-alt: #1a1f3a;
+            --card-bg: #1a1f3a;
+            --card-border: #2d3561;
+            --fg: #e2e8f0;
+            --fg-muted: #94a3b8;
+            --bg-secondary: #1a1f3a;
+            --bg-tertiary: #2d3561;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border-color: #2d3561;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, 'SF Pro Display', 'PingFang SC', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .header {
+            background: var(--bg-alt);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .back-btn {
+            text-decoration: none;
+            color: var(--fg);
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .back-btn:hover { background: var(--bg-secondary); }
+        .page-title { font-size: 1.3rem; font-weight: 700; }
+        .header-right { display: flex; gap: 12px; align-items: center; }
+        .theme-btn {
+            background: none; border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 6px 12px; cursor: pointer;
+            color: var(--fg); font-size: 1rem;
+        }
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--fg-muted);
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 16px; }
+        .empty-state p { font-size: 1rem; margin-bottom: 8px; }
+        .empty-state .hint { font-size: 0.85rem; }
+
+        .fav-group {
+            margin-bottom: 32px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .fav-group-header {
+            padding: 12px 20px;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .fav-group-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--fg);
+        }
+        .fav-group-count {
+            font-size: 0.8rem;
+            color: var(--fg-muted);
+        }
+        .fav-item {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .fav-item:last-child { border-bottom: none; }
+        .fav-item:hover { background: var(--bg-secondary); }
+        .fav-item.playing {
+            background: rgba(74, 108, 247, 0.15);
+            border-left: 3px solid var(--accent);
+        }
+        .fav-number {
+            min-width: 36px; height: 24px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 600;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+        .fav-item.playing .fav-number {
+            background: var(--accent);
+            color: #fff;
+        }
+        .fav-text {
+            flex: 1;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+        .fav-meta {
+            font-size: 0.75rem;
+            color: var(--fg-muted);
+            margin-top: 4px;
+        }
+        .fav-remove {
+            background: none; border: none; cursor: pointer;
+            font-size: 1rem; color: var(--fg-muted);
+            opacity: 0.4; transition: all 0.2s; padding: 2px 4px;
+            border-radius: 4px; flex-shrink: 0;
+        }
+        .fav-remove:hover { opacity: 1; color: #e53e3e; }
+
+        .playback-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--bg-alt);
+            border-top: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: none;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+        }
+        .playback-bar.active { display: flex; }
+        .pb-controls { display: flex; gap: 8px; align-items: center; }
+        .pb-btn {
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 8px 14px; cursor: pointer;
+            color: var(--fg); font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .pb-btn:hover { background: var(--bg-secondary); }
+        .pb-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .pb-text {
+            flex: 1;
+            font-size: 0.9rem;
+            color: var(--fg);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .pb-speed { display: flex; gap: 4px; }
+        .pb-speed-btn {
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: 6px; padding: 4px 10px; cursor: pointer;
+            font-size: 0.75rem; color: var(--fg);
+        }
+        .pb-speed-btn.active { background: var(--accent); color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <a href="跟读练习.html" class="back-btn">← 返回</a>
+            <h1 class="page-title">⭐ 我的收藏</h1>
+        </div>
+        <div class="header-right">
+            <button class="theme-btn" id="themeBtn" title="切换主题">🌙</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div id="favList"></div>
+        <div id="emptyState" class="empty-state" style="display:none;">
+            <div class="icon">⭐</div>
+            <p>还没有收藏的句子</p>
+            <p class="hint">在跟读练习中点击 ☆ 收藏需要复习的句子</p>
+        </div>
+    </div>
+
+    <div class="playback-bar" id="playbackBar">
+        <div class="pb-controls">
+            <button class="pb-btn" id="prevBtn">⏮</button>
+            <button class="pb-btn" id="playBtn">▶</button>
+            <button class="pb-btn" id="nextBtn">⏭</button>
+            <button class="pb-btn" id="loopBtn" title="循环">🔁</button>
+        </div>
+        <div class="pb-text" id="currentText">选择一句开始播放</div>
+        <div class="pb-speed">
+            <button class="pb-speed-btn" data-speed="0.75">0.75x</button>
+            <button class="pb-speed-btn active" data-speed="1">1x</button>
+            <button class="pb-speed-btn" data-speed="1.25">1.25x</button>
+        </div>
+    </div>
+
+    <audio id="audioPlayer" preload="auto"></audio>
+
+    <script>
+        const audio = document.getElementById('audioPlayer');
+        const favList = document.getElementById('favList');
+        const emptyState = document.getElementById('emptyState');
+        const playbackBar = document.getElementById('playbackBar');
+        const currentText = document.getElementById('currentText');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const loopBtn = document.getElementById('loopBtn');
+
+        let allFavs = [];
+        let currentIndex = -1;
+        let isPlaying = false;
+        let isLooping = false;
+        let playbackRate = 1;
+
+        // 主题
+        const savedTheme = localStorage.getItem('yilinDarkMode') === 'true' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeBtn').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        document.getElementById('themeBtn').onclick = () => {
+            const cur = document.documentElement.getAttribute('data-theme');
+            const next = cur === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('yilinDarkMode', next === 'dark');
+            document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+        };
+
+        function getFavorites() {
+            return JSON.parse(localStorage.getItem('shadow_favorites') || '[]');
+        }
+        function saveFavorites(favs) {
+            localStorage.setItem('shadow_favorites', JSON.stringify(favs));
+        }
+
+        function renderFavList() {
+            allFavs = getFavorites().sort((a, b) => a.addedAt - b.addedAt);
+            if (allFavs.length === 0) {
+                emptyState.style.display = 'block';
+                favList.innerHTML = '';
+                playbackBar.classList.remove('active');
+                return;
+            }
+            emptyState.style.display = 'none';
+
+            // 按 book-test 分组
+            const groups = {};
+            allFavs.forEach((f, i) => {
+                const key = `${f.book}-${f.test}`;
+                if (!groups[key]) groups[key] = [];
+                groups[key].push({ ...f, globalIndex: i });
+            });
+
+            favList.innerHTML = Object.entries(groups).map(([key, items]) => {
+                const [book, test] = key.split('-');
+                return `
+                <div class="fav-group">
+                    <div class="fav-group-header">
+                        <span class="fav-group-title">剑${book} Test ${test}</span>
+                        <span class="fav-group-count">${items.length} 句</span>
+                    </div>
+                    ${items.map(item => `
+                        <div class="fav-item" data-index="${item.globalIndex}">
+                            <span class="fav-number">S${item.section + 1}-${item.sentenceId}</span>
+                            <div style="flex:1">
+                                <div class="fav-text">${item.en}</div>
+                                <div class="fav-meta">Section ${item.section + 1} · ${formatTime(item.start)}</div>
+                            </div>
+                            <button class="fav-remove" data-index="${item.globalIndex}" title="取消收藏">✕</button>
+                        </div>
+                    `).join('')}
+                </div>`;
+            }).join('');
+        }
+
+        function formatTime(s) {
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        function playFav(index) {
+            if (index < 0 || index >= allFavs.length) return;
+            currentIndex = index;
+            const fav = allFavs[index];
+            const audioSrc = `audio/cam${fav.book}-test${fav.test}.mp4`;
+
+            if (audio.src.indexOf(`cam${fav.book}-test${fav.test}`) === -1) {
+                audio.src = audioSrc;
+            }
+            audio.playbackRate = playbackRate;
+            currentText.textContent = fav.en;
+            playbackBar.classList.add('active');
+
+            audio.addEventListener('loadedmetadata', function onLoad() {
+                audio.currentTime = fav.start;
+                audio.play();
+                isPlaying = true;
+                playBtn.textContent = '⏸';
+                audio.removeEventListener('loadedmetadata', onLoad);
+            });
+
+            if (audio.readyState >= 1) {
+                audio.currentTime = fav.start;
+                audio.play();
+                isPlaying = true;
+                playBtn.textContent = '⏸';
+            }
+
+            updateHighlight();
+        }
+
+        function updateHighlight() {
+            document.querySelectorAll('.fav-item').forEach((item, i) => {
+                item.classList.toggle('playing', parseInt(item.dataset.index) === currentIndex);
+            });
+        }
+
+        // 音频时间更新 - 到句末停止
+        audio.addEventListener('timeupdate', () => {
+            if (currentIndex < 0) return;
+            const fav = allFavs[currentIndex];
+            if (audio.currentTime >= fav.end) {
+                if (isLooping) {
+                    audio.currentTime = fav.start;
+                    audio.play();
+                } else {
+                    audio.pause();
+                    isPlaying = false;
+                    playBtn.textContent = '▶';
+                }
+            }
+        });
+
+        audio.addEventListener('ended', () => {
+            if (isLooping) {
+                audio.currentTime = allFavs[currentIndex].start;
+                audio.play();
+            } else {
+                isPlaying = false;
+                playBtn.textContent = '▶';
+            }
+        });
+
+        // 事件
+        favList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('fav-remove')) {
+                e.stopPropagation();
+                const idx = parseInt(e.target.dataset.index);
+                allFavs.splice(idx, 1);
+                saveFavorites(allFavs);
+                renderFavList();
+                return;
+            }
+            const item = e.target.closest('.fav-item');
+            if (item) {
+                playFav(parseInt(item.dataset.index));
+            }
+        });
+
+        playBtn.addEventListener('click', () => {
+            if (currentIndex < 0) {
+                if (allFavs.length > 0) playFav(0);
+                return;
+            }
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                playBtn.textContent = '▶';
+            } else {
+                audio.play();
+                isPlaying = true;
+                playBtn.textContent = '⏸';
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) playFav(currentIndex - 1);
+        });
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < allFavs.length - 1) playFav(currentIndex + 1);
+        });
+        loopBtn.addEventListener('click', () => {
+            isLooping = !isLooping;
+            loopBtn.classList.toggle('active', isLooping);
+        });
+
+        document.querySelectorAll('.pb-speed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.pb-speed-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                playbackRate = parseFloat(btn.dataset.speed);
+                audio.playbackRate = playbackRate;
+            });
+        });
+
+        // 初始化
+        renderFavList();
+    </script>
+</body>
+</html>

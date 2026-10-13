@@ -1,3 +1,5 @@
 *.ps1
 *.py
 *.下载
+tools/models/
+

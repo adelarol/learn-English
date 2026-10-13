@@ -444,6 +444,27 @@
             color: var(--text-primary);
         }
 
+        /* 收藏按钮 */
+        .fav-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            opacity: 0.4;
+            transition: all 0.2s ease;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .fav-btn:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+        .fav-btn.active {
+            opacity: 1;
+            color: #f0ad4e;
+        }
+
         /* 播放按钮 */
         .playback-controls {
             display: flex;
@@ -577,17 +598,63 @@
         audio {
             display: none;
         }
+
+        /* 影子跟读模式 */
+        .current-text.shadow-mode {
+            filter: blur(8px);
+            user-select: none;
+            cursor: pointer;
+            transition: filter 0.3s ease;
+        }
+        .current-text.shadow-mode:hover {
+            filter: blur(4px);
+        }
+        .current-text.shadow-mode.revealed {
+            filter: none;
+            user-select: text;
+        }
+        .shadow-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* 影子模式激活时：播放中模糊整个列表的句子文字 + 右侧currentText */
+        body.shadow-active.shadow-playing .sentence-text {
+            filter: blur(6px);
+            user-select: none;
+            transition: filter 0.3s ease;
+        }
+        body.shadow-active.shadow-playing.revealed .sentence-text {
+            filter: none;
+            user-select: text;
+        }
     </style>
 <script src="user.js"></script>
 </head>
 <body>
     <div class="top-bar">
         <div class="top-bar-content">
-            <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
                 <a href="index.html" class="back-btn">← 返回</a>
                 <div>
                     <h1 class="page-title">跟读练习</h1>
                     <div class="test-info">剑桥雅思 11 Test 2 · 共 <span id="totalSentences">0</span> 句</div>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; margin-left: auto;">
+                    <button class="control-btn" id="shadowBtn" title="影子跟读模式">
+                        <span>👤</span> 影子跟读
+                    </button>
+                    <a href="我的收藏.html" class="control-btn" title="我的收藏">
+                        <span>⭐</span> 我的收藏
+                    </a>
+                    <button class="control-btn" id="vocabBtn" title="生词摘抄模式">
+                        <span>📝</span> 生词摘抄
+                    </button>
+                    <button class="control-btn" id="themeBtn" title="切换主题">
+                        <span id="themeIcon">🌙</span>
+                    </button>
                 </div>
             </div>
             <div class="controls">
@@ -616,15 +683,6 @@
                 <button class="control-btn" id="autoNextBtn" title="自动播放下一句">
                     <span>⏭️</span> 自动下一句
                 </button>
-                <a href="影子跟读.html" class="control-btn" title="影子跟读模式">
-                    <span>👤</span> 影子跟读
-                </a>
-                <button class="control-btn" id="vocabBtn" title="生词摘抄模式">
-                    <span>📝</span> 生词摘抄
-                </button>
-                <button class="control-btn" id="themeBtn" title="切换主题">
-                    <span id="themeIcon">🌙</span>
-                </button>
             </div>
         </div>
     </div>
@@ -644,6 +702,7 @@
             <div class="current-sentence">
                 <div class="current-label">当前句子</div>
                 <div class="current-text empty" id="currentText">点击左侧句子开始播放</div>
+                <div class="shadow-hint" id="shadowHint" style="display:none;">点击文字揭示原文</div>
             </div>
 
             <div class="vocab-panel" id="vocabPanel" style="display: none;">
@@ -697,7 +756,10 @@
             playedIds: new Set(),
             // 生词摘抄
             vocabMode: false,
-            vocab: new Set(JSON.parse(localStorage.getItem('shadowVocab') || '[]'))
+            vocab: new Set(JSON.parse(localStorage.getItem('shadowVocab') || '[]')),
+            // 影子跟读
+            shadowMode: false,
+            shadowRevealed: false
         };
 
         // DOM元素
@@ -727,6 +789,8 @@
         const clearVocabBtn = document.getElementById('clearVocabBtn');
         const themeBtn = document.getElementById('themeBtn');
         const themeIcon = document.getElementById('themeIcon');
+        const shadowBtn = document.getElementById('shadowBtn');
+        const shadowHint = document.getElementById('shadowHint');
 
         // 主题切换
         function initTheme() {
@@ -808,11 +872,17 @@
                 loadSection(0);
             } else {
                 state.sentences = [];
+                state.currentIndex = -1;
+                state.shadowRevealed = false;
+                document.body.classList.remove('shadow-playing', 'revealed');
                 document.getElementById('sectionTabs').style.display = 'none';
-                getTotalSentencesEl().textContent = '0';
+                document.querySelector('.test-info').textContent = `剑桥雅思 ${book} Test ${test} · 数据暂未收录`;
                 currentText.textContent = `剑桥雅思 ${book} Test ${test} 数据暂未收录`;
                 currentText.classList.add('empty');
+                currentText.classList.remove('shadow-mode', 'revealed');
+                shadowHint.style.display = 'none';
                 sentencesList.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-secondary)">该单元数据暂未收录，敬请期待</div>';
+                updateNavButtons();
             }
         }
         
@@ -827,8 +897,12 @@
                 updateNavButtons();
                 // 重置播放状态
                 state.currentIndex = -1;
+                state.shadowRevealed = false;
+                document.body.classList.remove('shadow-playing', 'revealed');
                 currentText.textContent = '点击左侧句子开始播放';
                 currentText.classList.add('empty');
+                currentText.classList.remove('shadow-mode', 'revealed');
+                shadowHint.style.display = 'none';
             }
         }
 
@@ -839,13 +913,44 @@
 
         // 渲染句子列表
         function renderSentences() {
-            sentencesList.innerHTML = state.sentences.map((s, i) => `
+            const favs = getFavorites();
+            const favIds = new Set(favs.map(f => `${f.book}-${f.test}-${f.section}-${f.sentenceId}`));
+            const book = state.book || 11;
+            const test = state.test || 2;
+            const sec = state.currentSection || 0;
+            sentencesList.innerHTML = state.sentences.map((s, i) => {
+                const favKey = `${book}-${test}-${sec}-${s.id}`;
+                const isFav = favIds.has(favKey);
+                return `
                 <div class="sentence-item" data-index="${i}">
                     <span class="sentence-number">${s.id}</span>
                     <span class="sentence-text">${state.vocabMode ? wrapWords(s.en) : s.en}</span>
+                    <button class="fav-btn ${isFav ? 'active' : ''}" data-fav-id="${s.id}" title="${isFav ? '取消收藏' : '收藏'}">${isFav ? '★' : '☆'}</button>
                     <span class="sentence-time">${formatTime(s.start)}</span>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
+        }
+
+        // 收藏管理
+        function getFavorites() {
+            return JSON.parse(localStorage.getItem('shadow_favorites') || '[]');
+        }
+        function saveFavorites(favs) {
+            localStorage.setItem('shadow_favorites', JSON.stringify(favs));
+        }
+        function toggleFavorite(sentenceId, en, start, end) {
+            const book = state.book || 11;
+            const test = state.test || 2;
+            const sec = state.currentSection || 0;
+            const favs = getFavorites();
+            const idx = favs.findIndex(f => f.book === book && f.test === test && f.section === sec && f.sentenceId === sentenceId);
+            if (idx !== -1) {
+                favs.splice(idx, 1);
+            } else {
+                favs.push({ book, test, section: sec, sentenceId, en, start, end, addedAt: Date.now() });
+            }
+            saveFavorites(favs);
+            renderSentences();
         }
 
         // 将句子文本包装为可点击单词
@@ -891,6 +996,14 @@
 
             // 句子点击
             sentencesList.addEventListener('click', (e) => {
+                // 收藏按钮
+                if (e.target.classList.contains('fav-btn')) {
+                    e.stopPropagation();
+                    const id = parseInt(e.target.dataset.favId);
+                    const s = state.sentences.find(x => x.id === id);
+                    if (s) toggleFavorite(id, s.en, s.start, s.end);
+                    return;
+                }
                 // 生词摘抄模式：点击单词
                 if (state.vocabMode && e.target.classList.contains('word')) {
                     e.stopPropagation();
@@ -937,11 +1050,23 @@
 
             // 生词摘抄模式
             vocabBtn.addEventListener('click', () => {
+                // 互斥：关闭影子跟读
+                if (state.shadowMode) toggleShadowMode();
                 state.vocabMode = !state.vocabMode;
                 vocabBtn.classList.toggle('active', state.vocabMode);
                 vocabPanel.style.display = state.vocabMode ? 'block' : 'none';
                 renderSentences();
                 renderVocab();
+            });
+
+            // 影子跟读模式
+            shadowBtn.addEventListener('click', toggleShadowMode);
+
+            // 影子模式下点击揭示原文
+            currentText.addEventListener('click', () => {
+                if (state.shadowMode && !state.shadowRevealed && state.currentIndex >= 0) {
+                    setShadowRevealed(true);
+                }
             });
 
             // 生词本事件
@@ -1018,6 +1143,52 @@
             renderSentences();
         }
 
+        // 设置影子揭示状态（同步 currentText 和整个列表的模糊）
+        function setShadowRevealed(revealed) {
+            state.shadowRevealed = revealed;
+            if (revealed) {
+                currentText.classList.remove('shadow-mode');
+                currentText.classList.add('revealed');
+                document.body.classList.add('revealed');
+                shadowHint.style.display = 'none';
+            } else {
+                currentText.classList.add('shadow-mode');
+                currentText.classList.remove('revealed');
+                document.body.classList.remove('revealed');
+                shadowHint.style.display = 'block';
+            }
+        }
+
+        // 进入/退出影子播放状态（控制整个列表的模糊）
+        function setShadowPlaying(playing) {
+            document.body.classList.toggle('shadow-playing', playing);
+            if (!playing) {
+                document.body.classList.remove('revealed');
+            }
+        }
+
+        // 切换影子跟读模式
+        function toggleShadowMode() {
+            state.shadowMode = !state.shadowMode;
+            shadowBtn.classList.toggle('active', state.shadowMode);
+            document.body.classList.toggle('shadow-active', state.shadowMode);
+            // 互斥：关生词摘抄
+            if (state.shadowMode && state.vocabMode) {
+                state.vocabMode = false;
+                vocabBtn.classList.remove('active');
+                vocabPanel.style.display = 'none';
+                renderSentences();
+            }
+            // 重置影子状态
+            state.shadowRevealed = false;
+            currentText.classList.remove('shadow-mode', 'revealed');
+            shadowHint.style.display = 'none';
+            setShadowPlaying(false);
+            if (state.shadowMode && state.currentIndex >= 0) {
+                setShadowRevealed(false);
+            }
+        }
+
         // 播放指定句子
         function playSentence(index) {
             if (index < 0 || index >= state.sentences.length) return;
@@ -1029,6 +1200,9 @@
             updateCurrentSentence(sentence);
             updateSentenceHighlight(index);
             updateNavButtons();
+
+            // 影子模式：标记正在播放
+            if (state.shadowMode) setShadowPlaying(true);
 
             // 设置音频
             audio.currentTime = sentence.start;
@@ -1044,6 +1218,13 @@
         function updateCurrentSentence(sentence) {
             currentText.textContent = sentence.en;
             currentText.classList.remove('empty');
+            // 影子模式自动模糊
+            if (state.shadowMode) {
+                setShadowRevealed(false);
+            } else {
+                currentText.classList.remove('shadow-mode', 'revealed');
+                shadowHint.style.display = 'none';
+            }
         }
 
         // 更新句子高亮
@@ -1060,12 +1241,19 @@
         function updateNavButtons() {
             prevBtn.disabled = state.currentIndex <= 0;
             nextBtn.disabled = state.currentIndex >= state.sentences.length - 1;
-            playBtn.disabled = state.currentIndex < 0;
+            // 影子模式下允许直接点播放（自动从第一句开始）
+            playBtn.disabled = state.currentIndex < 0 && !state.shadowMode;
         }
 
         // 切换播放/暂停
         function togglePlay() {
-            if (state.currentIndex < 0) return;
+            // 影子模式：无选中句时自动播放第一句
+            if (state.currentIndex < 0) {
+                if (state.shadowMode && state.sentences.length > 0) {
+                    playSentence(0);
+                }
+                return;
+            }
 
             if (state.isPlaying) {
                 audio.pause();
@@ -1108,9 +1296,18 @@
 
             // 到达句子结尾
             if (currentTime >= sentence.end) {
+                // 影子模式：播完自动揭示原文
+                if (state.shadowMode && !state.shadowRevealed) {
+                    setShadowRevealed(true);
+                }
+
                 if (state.isLooping) {
                     // 循环播放当前句
                     audio.currentTime = sentence.start;
+                    // 影子模式：循环时重新模糊
+                    if (state.shadowMode) {
+                        setShadowRevealed(false);
+                    }
                 } else if (state.autoNext) {
                     // 自动播放下一句
                     if (state.currentIndex < state.sentences.length - 1) {

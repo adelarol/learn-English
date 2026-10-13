@@ -908,23 +908,22 @@ function renderAllWords(){
     box.innerHTML = '<p class="hint">该册暂无单词数据。</p>';
     return;
   }
-  let html = "";
-  units.forEach(function(u){
-    html += '<div class="unit-block">';
-    html += '<div class="unit-head">Unit ' + u.u + ' · ' + esc(u.title) + '</div>';
-    u.words.forEach(function(w){
-      const isWrong = hasWrong({ b:state.book, u:u.u, w:w.w });
-      html += '<div class="word-row' + (isWrong ? " in-wrong" : "") + '">' +
-                '<div class="wr-l">' +
-                  '<span class="wr-w">' + esc(w.w) + '</span>' +
-                  '<span class="wr-p">' + esc(w.p || "") + '</span>' +
-                '</div>' +
-                '<div class="wr-m">' + esc(w.m) + '</div>' +
-                '<button class="spk" data-say="' + esc(w.w) + '" title="朗读">🔊</button>' +
-              '</div>';
-    });
-    html += '</div>';
+  /* 只渲染当前选中单元，随单元芯片点击切换 */
+  const u = units.filter(function(x){ return x.u === state.unit; })[0] || units[0];
+  let html = '<div class="unit-block">';
+  html += '<div class="unit-head">Unit ' + u.u + ' · ' + esc(u.title) + '</div>';
+  u.words.forEach(function(w){
+    const isWrong = hasWrong({ b:state.book, u:u.u, w:w.w });
+    html += '<div class="word-row' + (isWrong ? " in-wrong" : "") + '">' +
+              '<div class="wr-l">' +
+                '<span class="wr-w">' + esc(w.w) + '</span>' +
+                '<span class="wr-p">' + esc(w.p || "") + '</span>' +
+              '</div>' +
+              '<div class="wr-m">' + esc(w.m) + '</div>' +
+              '<button class="spk" data-say="' + esc(w.w) + '" title="朗读">🔊</button>' +
+            '</div>';
   });
+  html += '</div>';
   box.innerHTML = html;
 }
 

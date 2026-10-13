@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音标训练 · 英语学习中心</title>
+    <style>
+        /* 主题变量 */
+        :root {
+            --bg-primary: #f5f7fa;
+            --bg-secondary: rgba(0, 0, 0, 0.03);
+            --bg-tertiary: rgba(0, 0, 0, 0.08);
+            --text-primary: #1a1a2e;
+            --text-secondary: rgba(26, 26, 46, 0.6);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --accent: #4a6cf7;
+            --accent-glow: rgba(74, 108, 247, 0.2);
+            --ok: #16a34a;
+            --ok-bg: rgba(22, 163, 74, 0.12);
+            --bad: #dc2626;
+            --bad-bg: rgba(220, 38, 38, 0.1);
+            --note-bg: rgba(74, 108, 247, 0.08);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f1428;
+            --bg-secondary: rgba(255, 255, 255, 0.03);
+            --bg-tertiary: rgba(255, 255, 255, 0.08);
+            --text-primary: #e8eaf6;
+            --text-secondary: rgba(232, 234, 246, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent: #6b8cff;
+            --accent-glow: rgba(107, 140, 255, 0.35);
+            --ok: #4ade80;
+            --ok-bg: rgba(74, 222, 128, 0.14);
+            --bad: #f87171;
+            --bad-bg: rgba(248, 113, 113, 0.14);
+            --note-bg: rgba(107, 140, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'SF Pro', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* ===== 顶部导航 ===== */
+        .top-bar {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .top-bar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .back-btn {
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .back-btn:hover {
+            background: var(--bg-secondary);
+            transform: translateY(-2px);
+        }
+        .page-title { font-size: clamp(1.2rem, 3vw, 1.5rem); font-weight: 600; }
+        .page-info { font-size: 0.85rem; color: var(--text-secondary); }
+        .bar-right { display: flex; gap: 8px; align-items: center; margin-left: auto; flex-wrap: wrap; }
+
+        .control-btn {
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .control-btn:hover {
+            background: var(--bg-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+        .control-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .control-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* 口音切换 */
+        .accent-switch {
+            display: flex;
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            overflow: hidden;
+            background: var(--bg-tertiary);
+        }
+        .acc-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .acc-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
+
+        /* ===== 模式标签 ===== */
+        .mode-bar {
+            max-width: 1200px;
+            margin: 20px auto 0;
+            padding: 0 24px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .mode-tab {
+            padding: 10px 20px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .mode-tab:hover { transform: translateY(-2px); color: var(--text-primary); }
+        .mode-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+        /* ===== 主区域 ===== */
+        .main-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+        .mode-sec { display: none; animation: fadeIn 0.25s ease; }
+        .mode-sec.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+        .sec-intro { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px; }
+        .setup-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; }
+
+        .selector {
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .selector:hover { background: var(--bg-secondary); }
+        .selector:focus { outline: none; border-color: var(--accent); }
+
+        .btn-primary {
+            padding: 10px 22px;
+            background: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px var(--accent-glow); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-ghost {
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-ghost:hover { transform: translateY(-2px); border-color: var(--accent); }
+        .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+        .tag.accent { background: var(--accent-glow); color: var(--accent); font-weight: 600; }
+        .tag.warn { background: var(--bad-bg); color: var(--bad); }
+
+        /* ===== 音标学习卡 ===== */
+        .group-block { margin-bottom: 28px; }
+        .group-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+        .group-name { font-size: 1.05rem; font-weight: 600; }
+        .group-desc { font-size: 0.8rem; color: var(--text-secondary); }
+        .phon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+        }
+        .phon-tile {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 10px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .phon-tile:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 12px 28px var(--accent-glow);
+        }
+        .tile-check {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            color: var(--ok);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .tile-sym { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
+        .tile-sub { font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; }
+        .tile-word { font-size: 0.8rem; color: var(--accent); margin-top: 6px; }
+
+        /* ===== 学习面板弹窗 ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 84vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        .modal-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+        .modal-sym { font-size: clamp(2.2rem, 6vw, 2.8rem); font-weight: 700; line-height: 1.2; color: var(--accent); }
+        .modal-sym-sub { font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px; }
+        .modal-head-right { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+        .modal-close {
+            width: 32px; height: 32px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: var(--text-primary); }
+        .modal-tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+        .us-note {
+            background: var(--note-bg);
+            border: 1px dashed var(--accent);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+        }
+        .tip-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.88rem;
+            margin-bottom: 10px;
+        }
+        .tip-block b { display: block; margin-bottom: 4px; font-size: 0.8rem; }
+        .tip-tips b { color: var(--ok); }
+        .tip-trap b { color: var(--bad); }
+        .word-list { margin-top: 6px; }
+        .word-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .word-row:last-child { border-bottom: none; }
+        .word-main { min-width: 0; }
+        .word-text { font-size: 1.05rem; font-weight: 600; }
+        .word-cn { font-size: 0.78rem; color: var(--text-secondary); }
+        .word-ipa { font-family: ui-monospace, 'SF Mono', Consolas, monospace; font-size: 0.95rem; margin-left: auto; white-space: nowrap; }
+        .word-ipa.alt { color: var(--text-secondary); font-size: 0.8rem; }
+        .ipa-hl { color: var(--accent); font-weight: 700; }
+        .word-btns { display: flex; gap: 6px; }
+        .play-btn-sm {
+            width: 36px; height: 36px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .play-btn-sm:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .play-btn-sm.alt-play { color: var(--text-secondary); font-size: 0.75rem; width: 44px; }
+        .modal-foot { display: flex; gap: 10px; margin-top: 16px; }
+        .phon-play-row { display: flex; gap: 8px; margin: 14px 0 4px; flex-wrap: wrap; }
+        .phon-play-row .btn-ghost { flex: 1; min-width: 0; }
+        .uk-todo-note { margin: 6px 0 0; padding: 8px 12px; border-radius: 8px; background: var(--note-bg); color: var(--text-secondary); font-size: 0.8rem; }
+        a.btn-ghost { text-decoration: none; text-align: center; }
+
+        /* ===== 听音辨标 ===== */
+        .quiz-card, .shadow-card, .pair-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .quiz-stage { text-align: center; }
+        .quiz-play {
+            width: 72px; height: 72px;
+            border-radius: 999px;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin: 6px auto 10px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .quiz-play:hover { transform: scale(1.08); box-shadow: 0 10px 26px var(--accent-glow); }
+        .quiz-word { font-size: clamp(1.8rem, 5vw, 2.4rem); font-weight: 700; }
+        .quiz-word-cn { color: var(--text-secondary); font-size: 0.9rem; }
+        .quiz-q { color: var(--text-secondary); font-size: 0.9rem; margin-top: 8px; }
+        .opt-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px 0 14px;
+        }
+        @media (max-width: 640px) { .opt-grid { grid-template-columns: repeat(2, 1fr); } }
+        .opt-btn {
+            min-height: 64px;
+            background: var(--bg-primary);
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1.35rem;
+            font-weight: 600;
+            font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .opt-btn:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-3px); }
+        .opt-btn.correct { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+        .opt-btn.wrong { border-color: var(--bad); background: var(--bad-bg); color: var(--bad); }
+        .opt-btn:disabled { cursor: default; }
+        .feedback { min-height: 26px; font-size: 0.92rem; margin-bottom: 14px; }
+        .feedback.ok { color: var(--ok); font-weight: 600; }
+        .feedback.bad { color: var(--bad); font-weight: 600; }
+        .quiz-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .quiz-stats { color: var(--text-secondary); font-size: 0.85rem; }
+
+        /* ===== 跟读训练 ===== */
+        .shadow-progress { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .progress-text { font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; }
+        .progress-bar { flex: 1; height: 8px; background: var(--bg-tertiary); border-radius: 999px; overflow: hidden; min-width: 120px; }
+        .progress-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.3s ease; }
+        .shadow-stage { text-align: center; }
+        .shadow-sym { font-size: clamp(2.6rem, 8vw, 3.4rem); font-weight: 700; color: var(--accent); line-height: 1.2; }
+        .shadow-sym-sub { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 6px; }
+        .shadow-word { font-size: clamp(2rem, 6vw, 2.6rem); font-weight: 700; margin-top: 8px; }
+        .shadow-ipa { font-family: ui-monospace, 'SF Mono', Consolas, monospace; font-size: 1.1rem; color: var(--text-secondary); }
+        .shadow-ipa .ipa-hl { color: var(--accent); }
+        .shadow-tips { max-width: 640px; margin: 14px auto 0; text-align: left; }
+        .shadow-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+        .nav-row { display: flex; justify-content: space-between; margin-top: 18px; gap: 10px; }
+        .done-btn.done { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); font-weight: 600; }
+
+        /* ===== 最小对立组 ===== */
+        .pair-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 12px;
+        }
+        .pair-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .pair-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 12px 28px var(--accent-glow); }
+        .pair-card.active { border-color: var(--accent); background: var(--note-bg); }
+        .pair-syms { font-family: ui-monospace, 'SF Mono', Consolas, monospace; font-weight: 700; font-size: 1.05rem; }
+        .pair-syms .vs { color: var(--accent); font-size: 0.8rem; margin: 0 4px; }
+        .pair-words { font-size: 0.92rem; margin-top: 4px; }
+        .pair-note { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+        .pair-quiz-wrap { margin-bottom: 20px; }
+        .pair-title { font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 14px; }
+        @media (max-width: 560px) { .choice-row { grid-template-columns: 1fr; } }
+        .choice-btn {
+            padding: 18px 12px;
+            background: var(--bg-primary);
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            color: var(--text-primary);
+        }
+        .choice-btn:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-3px); }
+        .choice-btn .choice-word { font-size: 1.5rem; font-weight: 700; }
+        .choice-btn .choice-sym { display: block; font-family: ui-monospace, 'SF Mono', Consolas, monospace; color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px; }
+        .choice-btn.correct { border-color: var(--ok); background: var(--ok-bg); }
+        .choice-btn.correct .choice-word { color: var(--ok); }
+        .choice-btn.wrong { border-color: var(--bad); background: var(--bad-bg); }
+        .choice-btn.wrong .choice-word { color: var(--bad); }
+        .reveal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+        @media (max-width: 560px) { .reveal-grid { grid-template-columns: 1fr; } }
+        .reveal-cell {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+        .reveal-cell .rw { font-size: 1.3rem; font-weight: 700; }
+        .reveal-cell .rc { font-size: 0.78rem; color: var(--text-secondary); }
+        .reveal-cell .ri { font-family: ui-monospace, 'SF Mono', Consolas, monospace; color: var(--text-secondary); font-size: 0.9rem; }
+        .reveal-btns { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
+
+        /* 空状态 */
+        .empty-hint { text-align: center; color: var(--text-secondary); padding: 40px 0; }
+        .empty-hint .big { font-size: 2rem; margin-bottom: 8px; }
+
+        .warn-banner {
+            display: none;
+            background: var(--bad-bg);
+            border: 1px solid var(--bad);
+            color: var(--bad);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .top-bar { padding: 12px 16px; }
+            .main-container { padding: 16px; }
+            .mode-bar { padding: 0 16px; }
+            .quiz-card, .shadow-card, .pair-panel { padding: 16px; }
+            .bar-right { margin-left: 0; }
+        }
+    </style>
+    <script src="user.js"></script>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <a href="index.html" class="back-btn">← 返回</a>
+                <div>
+                    <h1 class="page-title">音标训练</h1>
+                    <div class="page-info">44 音标 · 英美双口音 · <span id="infoStats">已学 0 · 错题 0</span></div>
+                </div>
+            </div>
+            <div class="bar-right">
+                <div class="accent-switch" title="切换口音（全局生效）">
+                    <button class="acc-btn" id="accUK">🇬🇧 英音</button>
+                    <button class="acc-btn" id="accUS">🇺🇸 美音</button>
+                </div>
+                <button class="control-btn" id="themeBtn" title="切换主题">
+                    <span id="themeIcon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mode-bar">
+        <button class="mode-tab active" data-mode="study">📖 音标学习</button>
+        <button class="mode-tab" data-mode="quiz">👂 听音辨标</button>
+        <button class="mode-tab" data-mode="shadow">🗣️ 跟读训练</button>
+        <button class="mode-tab" data-mode="pairs">⚖️ 最小对立组</button>
+    </div>
+
+    <div class="main-container">
+        <div class="warn-banner" id="ttsWarn">当前浏览器不支持语音合成（speechSynthesis），发音功能不可用。建议使用 Chrome / Edge 浏览器。</div>
+
+        <!-- ===== 音标学习 ===== -->
+        <section class="mode-sec active" id="studySec">
+            <p class="sec-intro">点击音标卡查看口型要领与例词，点 🔊 听当前口音、点 🎧 听另一口音对照。已学过的音标会打 ✓。</p>
+            <div id="studyGrid"></div>
+        </section>
+
+        <!-- ===== 听音辨标 ===== -->
+        <section class="mode-sec" id="quizSec">
+            <div id="quizSetup">
+                <p class="sec-intro">听一个例词发音，选出它包含的目标音标。练"听得准"，才能"说得准"。答错的音标会进入错题本。</p>
+                <div class="setup-row">
+                    <select class="selector" id="quizScope">
+                        <option value="all">全部 44 音标</option>
+                        <option value="vowel">仅元音（20）</option>
+                        <option value="cons">仅辅音（24）</option>
+                    </select>
+                    <button class="btn-ghost" id="wrongBtn">📕 错题重练（0）</button>
+                    <button class="btn-primary" id="quizStartBtn">开始练习</button>
+                </div>
+            </div>
+            <div id="quizPlay" style="display: none;">
+                <div class="quiz-card">
+                    <div class="quiz-stage">
+                        <button class="quiz-play" id="quizReplayBtn" title="再听一遍">▶</button>
+                        <div class="quiz-word" id="quizWord"></div>
+                        <div class="quiz-word-cn" id="quizWordCn"></div>
+                        <div class="quiz-q">这个词里包含哪个音标？</div>
+                    </div>
+                    <div class="opt-grid" id="quizOpts"></div>
+                    <div class="feedback" id="quizFb"></div>
+                    <div class="quiz-foot">
+                        <span class="quiz-stats" id="quizStats">答对 0 / 0</span>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-ghost" id="quizExitBtn">结束</button>
+                            <button class="btn-primary" id="quizNextBtn">下一题 →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 跟读训练 ===== -->
+        <section class="mode-sec" id="shadowSec">
+            <p class="sec-intro">看口型要领 → 听标准音 → 出声模仿。可切英/美音、放慢速度、随时听另一口音对照。读完点"我已跟读"打卡。</p>
+            <div class="setup-row">
+                <select class="selector" id="shadowScope">
+                    <option value="all">全部音标</option>
+                    <option value="vowel">元音</option>
+                    <option value="cons">辅音</option>
+                    <option value="voiceless">清辅音</option>
+                    <option value="voiced">浊辅音</option>
+                </select>
+            </div>
+            <div class="shadow-progress">
+                <span class="progress-text" id="shadowCount">0 / 0</span>
+                <div class="progress-bar"><div class="progress-fill" id="shadowFill" style="width: 0%"></div></div>
+            </div>
+            <div class="shadow-card" id="shadowCard"></div>
+        </section>
+
+        <!-- ===== 最小对立组 ===== -->
+        <section class="mode-sec" id="pairsSec">
+            <p class="sec-intro">针对中国学习者的高频痛点音对。系统随机播放两个词中的一个，你来辨认是哪个——这是纠音最有效的练习。选择一组开始：</p>
+            <div class="pair-quiz-wrap" id="pairQuizWrap" style="display: none;">
+                <div class="pair-panel" id="pairPanel"></div>
+            </div>
+            <div class="pair-grid" id="pairGrid"></div>
+        </section>
+    </div>
+
+    <!-- 学习面板弹窗 -->
+    <div class="modal-overlay" id="studyModal">
+        <div class="modal-content" id="modalBody"></div>
+    </div>
+
+    <script src="phonetics-data.js"></script>
+    <script>
+        // ===== 工具 =====
+        const $ = id => document.getElementById(id);
+        const ACC_LABEL = { uk: '英', us: '美' };
+        const FLAG = { uk: '🇬🇧', us: '🇺🇸' };
+        const GROUP_MAP = {};
+        PHONETICS_GROUPS.forEach(g => GROUP_MAP[g.key] = g);
+
+        const otherAcc = () => state.accent === 'uk' ? 'us' : 'uk';
+        const symOf = (p, acc) => '/' + (acc === 'uk' ? p.uk : p.us) + '/';
+        const ipaOf = (w, acc) => '/' + (acc === 'uk' ? w.uk : w.us) + '/';
+        const pickOne = arr => arr[Math.floor(Math.random() * arr.length)];
+        function shuffle(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+        // 在 IPA 字符串中高亮目标音标符号
+        function markIPA(ipa, target) {
+            if (!target) return ipa;
+            const i = ipa.indexOf(target);
+            if (i < 0) return ipa;
+            return ipa.slice(0, i) + '<span class="ipa-hl">' + target + '</span>' + ipa.slice(i + target.length);
+        }
+        function isVowel(p) { return ['vs', 'vl', 'vd'].includes(p.group); }
+
+        // ===== 全局状态 =====
+        function loadProgress() {
+            const empty = { learned: [], shadow: [], wrong: [], pairWrong: [] };
+            try {
+                return Object.assign(empty, JSON.parse(localStorage.getItem('phonetics_progress') || '{}'));
+            } catch (e) { return empty; }
+        }
+        const state = {
+            accent: localStorage.getItem('phonetics_accent') === 'uk' ? 'uk' : 'us', // 默认美音（真人录音），显式存过 uk 才切英音
+            mode: 'study',
+            progress: loadProgress(),
+            quiz: { scope: 'all', wrongOnly: false, q: null, answered: false, right: 0, total: 0 },
+            shadow: { scope: 'all', idx: 0 },
+            pairs: { active: null, target: null, picked: null, answered: false, right: 0, total: 0 }
+        };
+        function saveProgress() {
+            localStorage.setItem('phonetics_progress', JSON.stringify(state.progress));
+            updateTopInfo();
+        }
+        function updateTopInfo() {
+            $('infoStats').textContent = `已学 ${state.progress.learned.length} · 错题 ${state.progress.wrong.length}`;
+        }
+
+        // ===== TTS 发音引擎 =====
+        const TTS = {
+            voices: { uk: null, us: null },
+            init() {
+                if (!('speechSynthesis' in window)) { $('ttsWarn').style.display = 'block'; return; }
+                const load = () => {
+                    const vs = speechSynthesis.getVoices();
+                    if (!vs.length) return;
+                    const find = (lang, prefs) => {
+                        for (const name of prefs) {
+                            const v = vs.find(x => x.lang.toLowerCase().replace('_', '-') === lang
+                                && x.name.toLowerCase().includes(name.toLowerCase()));
+                            if (v) return v;
+                        }
+                        return vs.find(x => x.lang.toLowerCase().replace('_', '-').startsWith(lang))
+                            || vs.find(x => x.lang.toLowerCase().startsWith('en'))
+                            || null;
+                    };
+                    this.voices.uk = find('en-gb', ['Google UK English Female', 'Google UK English Male', 'Sonia', 'Hazel', 'Libby', 'Ryan']);
+                    this.voices.us = find('en-us', ['Google US English', 'Aria', 'Jenny', 'Zira', 'Guy', 'Samantha']);
+                };
+                load();
+                speechSynthesis.onvoiceschanged = load;
+            },
+            speak(text, accent, rate = 1) {
+                if (!('speechSynthesis' in window)) return;
+                speechSynthesis.cancel();
+                const acc = accent || state.accent;
+                const u = new SpeechSynthesisUtterance(text);
+                u.voice = this.voices[acc];
+                u.lang = acc === 'uk' ? 'en-GB' : 'en-US';
+                u.rate = rate;
+                speechSynthesis.speak(u);
+            },
+            // 连续播放多个词（对比模式）：链式播放避免部分浏览器丢句
+            speakSeq(texts, accent, rate = 1) {
+                if (!('speechSynthesis' in window)) return;
+                speechSynthesis.cancel();
+                const acc = accent || state.accent;
+                const speakOne = i => {
+                    if (i >= texts.length) return;
+                    const u = new SpeechSynthesisUtterance(texts[i]);
+                    u.voice = this.voices[acc];
+                    u.lang = acc === 'uk' ? 'en-GB' : 'en-US';
+                    u.rate = rate;
+                    u.onend = () => speakOne(i + 1);
+                    u.onerror = () => speakOne(i + 1);
+                    speechSynthesis.speak(u);
+                };
+                speakOne(0);
+            }
+        };
+
+        // ===== 音标本音播放：离线 wav 优先 -> tone 载体 TTS -> 代表词兜底 =====
+        const AUDIO_BASE = 'audio/phonetics/';
+        const AUDIO_EXTS = ['wav', 'mp3', 'ogg']; // 旧 piper wav / freesound 真人 mp3 / Commons 真人 ogg
+        const audioCache = new Map(); // 'acc/slug' -> HTMLAudioElement | 'missing'
+        function playPhoneme(p, accent, rate) {
+            const acc = accent || state.accent;
+            const key = acc + '/' + p.slug;
+            const cached = audioCache.get(key);
+            if (cached === 'missing') return playTone(p, acc, rate);
+            if (cached) {
+                speechSynthesis.cancel();
+                cached.currentTime = 0;
+                cached.play().catch(() => {});
+                return;
+            }
+            tryPlay(key, p, acc, rate, 0);
+        }
+        function tryPlay(key, p, acc, rate, i) {
+            if (i >= AUDIO_EXTS.length) {
+                audioCache.set(key, 'missing');
+                return playTone(p, acc, rate);
+            }
+            const a = new Audio(AUDIO_BASE + key + '.' + AUDIO_EXTS[i]);
+            speechSynthesis.cancel();
+            a.play().then(() => audioCache.set(key, a)).catch(() => tryPlay(key, p, acc, rate, i + 1));
+        }
+        function playTone(p, accent, rate) {
+            if (p.tone) TTS.speak(p.tone, accent, rate || 0.65);
+            else TTS.speak(p.words[0].w, accent, rate || 0.9);
+        }
+
+        // ===== 主题 =====
+        function initTheme() {
+            const dark = localStorage.getItem('yilinDarkMode') === 'true';
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            $('themeIcon').textContent = dark ? '☀️' : '🌙';
+        }
+        function toggleTheme() {
+            const dark = document.documentElement.getAttribute('data-theme') !== 'dark';
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            localStorage.setItem('yilinDarkMode', dark);
+            $('themeIcon').textContent = dark ? '☀️' : '🌙';
+        }
+
+        // ===== 口音切换 =====
+        function setAccent(acc) {
+            state.accent = acc;
+            localStorage.setItem('phonetics_accent', acc);
+            $('accUK').classList.toggle('active', acc === 'uk');
+            $('accUS').classList.toggle('active', acc === 'us');
+            renderAll();
+        }
+
+        // ===== 模式切换 =====
+        function switchMode(mode) {
+            state.mode = mode;
+            document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+            document.querySelectorAll('.mode-sec').forEach(s => s.classList.remove('active'));
+            document.getElementById(mode + 'Sec').classList.add('active');
+        }
+
+        // ===== 音标学习 =====
+        function renderStudy() {
+            const learned = new Set(state.progress.learned);
+            const html = PHONETICS_GROUPS.map(g => {
+                const items = PHONEMES.filter(p => p.group === g.key);
+                const altAcc = otherAcc();
+                const tiles = items.map(p => {
+                    const diff = p.uk !== p.us;
+                    return `<div class="phon-tile" data-id="${p.id}">
+                        ${learned.has(p.id) ? '<span class="tile-check">✓</span>' : ''}
+                        <div class="tile-sym">${symOf(p, state.accent)}</div>
+                        <div class="tile-sub">${diff ? ACC_LABEL[altAcc] + ' /' + (altAcc === 'uk' ? p.uk : p.us) + '/' : '英美同形'}</div>
+                        <div class="tile-word">${p.words[0].w}</div>
+                    </div>`;
+                }).join('');
+                return `<div class="group-block">
+                    <div class="group-head">
+                        <span class="group-name">${g.name}</span>
+                        <span class="group-desc">${g.desc} · ${items.length} 个</span>
+                    </div>
+                    <div class="phon-grid">${tiles}</div>
+                </div>`;
+            }).join('');
+            $('studyGrid').innerHTML = html;
+            $('studyGrid').querySelectorAll('.phon-tile').forEach(tile => {
+                tile.addEventListener('click', () => openStudyModal(tile.dataset.id));
+            });
+        }
+
+        function openStudyModal(id, silent) {
+            const p = PHONEMES.find(x => x.id === id);
+            if (!p) return;
+            const learned = state.progress.learned.includes(p.id);
+            const g = GROUP_MAP[p.group];
+            const diff = p.uk !== p.us;
+            const altAcc = otherAcc();
+            const rows = p.words.map(w => {
+                const cur = ipaOf(w, state.accent);
+                const alt = ipaOf(w, altAcc);
+                const showAlt = w.uk !== w.us;
+                const targetSym = state.accent === 'uk' ? p.uk : p.us;
+                return `<div class="word-row">
+                    <div class="word-main">
+                        <div class="word-text">${w.w}</div>
+                        <div class="word-cn">${w.cn}</div>
+                    </div>
+                    <div class="word-ipa">${markIPA(cur, targetSym)}</div>
+                    ${showAlt ? `<div class="word-ipa alt">${alt}</div>` : ''}
+                    <div class="word-btns">
+                        <button class="play-btn-sm" data-play="${w.w}" title="播放当前口音">🔊</button>
+                        <button class="play-btn-sm alt-play" data-play-alt="${w.w}" title="听另一口音对照">🎧对照</button>
+                    </div>
+                </div>`;
+            }).join('');
+            $('modalBody').innerHTML = `
+                <div class="modal-head">
+                    <div>
+                        <div class="modal-sym">${symOf(p, state.accent)}</div>
+                        ${diff ? `<div class="modal-sym-sub">${FLAG[altAcc]} 另一口音：${symOf(p, altAcc)}</div>` : ''}
+                    </div>
+                    <div class="modal-head-right">
+                        <button class="modal-close" id="modalCloseBtn">×</button>
+                        <div class="modal-tags">
+                            <span class="tag accent">${g.name}</span>
+                            ${p.voice ? `<span class="tag">${p.voice}辅音</span>` : ''}
+                            <span class="tag">${FLAG[state.accent]} ${ACC_LABEL[state.accent]}音</span>
+                        </div>
+                    </div>
+                </div>
+                ${p.usNote ? `<div class="us-note">ℹ️ ${p.usNote}</div>` : ''}
+                <div class="tip-block tip-tips"><b>💡 口型要领</b>${p.tips}</div>
+                <div class="tip-block tip-trap"><b>⚠️ 易错点</b>${p.trap}</div>
+                <div class="phon-play-row">
+                    <button class="btn-ghost" id="phonMainBtn">🔊 音标本音</button>
+                    <button class="btn-ghost" id="phonAltBtn">🎧 对照${FLAG[altAcc]}</button>
+                    <button class="btn-ghost" id="phonWordBtn">🗣️ 例词</button>
+                </div>
+                ${state.accent === 'uk' ? '<div class="uk-todo-note">🇬🇧 英音本音真人录音整理中（敬请期待），当前为合成近似读音</div>' : ''}
+                <div class="word-list">${rows}</div>
+                <div class="modal-foot">
+                    <button class="btn-ghost done-btn ${learned ? 'done' : ''}" id="learnedBtn">${learned ? '✓ 已学过' : '标记已学'}</button>
+                    <a class="btn-ghost" href="https://www.bbc.co.uk/learningenglish/english/features/pronunciation" target="_blank" rel="noopener">📺 BBC 发音教程</a>
+                </div>`;
+            $('studyModal').classList.add('active');
+            $('modalCloseBtn').addEventListener('click', closeStudyModal);
+            $('learnedBtn').addEventListener('click', () => {
+                const i = state.progress.learned.indexOf(p.id);
+                if (i >= 0) state.progress.learned.splice(i, 1);
+                else state.progress.learned.push(p.id);
+                saveProgress();
+                renderStudy();
+                openStudyModal(p.id, true); // 刷新按钮状态，不重播发音
+            });
+            $('modalBody').querySelectorAll('[data-play]').forEach(btn => {
+                btn.addEventListener('click', () => TTS.speak(btn.dataset.play));
+            });
+            $('modalBody').querySelectorAll('[data-play-alt]').forEach(btn => {
+                btn.addEventListener('click', () => TTS.speak(btn.dataset.playAlt, otherAcc()));
+            });
+            $('phonMainBtn').addEventListener('click', () => playPhoneme(p));
+            $('phonAltBtn').addEventListener('click', () => playPhoneme(p, altAcc));
+            $('phonWordBtn').addEventListener('click', () => TTS.speak(p.words[0].w));
+            if (!silent) playPhoneme(p); // 打开即听本音（无音频时自动兜底）
+        }
+        function closeStudyModal() { $('studyModal').classList.remove('active'); }
+
+        // ===== 听音辨标 =====
+        function quizPool() {
+            if (state.quiz.wrongOnly) {
+                return PHONEMES.filter(p => state.progress.wrong.includes(p.id));
+            }
+            if (state.quiz.scope === 'vowel') return PHONEMES.filter(isVowel);
+            if (state.quiz.scope === 'cons') return PHONEMES.filter(p => !isVowel(p));
+            return PHONEMES;
+        }
+        function startQuiz(wrongOnly) {
+            state.quiz.wrongOnly = !!wrongOnly;
+            if (!wrongOnly) state.quiz.scope = $('quizScope').value;
+            state.quiz.right = 0; state.quiz.total = 0;
+            if (quizPool().length === 0) {
+                alert(wrongOnly ? '错题本是空的，太棒了！' : '该范围没有音标');
+                return;
+            }
+            $('quizSetup').style.display = 'none';
+            $('quizPlay').style.display = 'block';
+            genQuestion(true);
+        }
+        function genQuestion(play) {
+            const pool = quizPool();
+            if (!pool.length) {
+                $('quizFb').className = 'feedback ok';
+                $('quizFb').textContent = '🎉 该范围题目已全部答对！';
+                $('quizNextBtn').disabled = true;
+                return;
+            }
+            $('quizNextBtn').disabled = false;
+            const p = pickOne(pool);
+            const word = pickOne(p.words);
+            const distractPool = PHONEMES.filter(x => x.id !== p.id && isVowel(x) === isVowel(p));
+            const opts = shuffle([p, ...shuffle(distractPool).slice(0, 3)]);
+            const pure = Math.random() < 0.4; // 纯音标听辨：只播本音，不给词线索
+            state.quiz.q = { p, word, opts, pure };
+            state.quiz.answered = false;
+            renderQuestion();
+            if (play) pure ? playPhoneme(p) : TTS.speak(word.w);
+        }
+        function renderQuestion() {
+            const { p, word, opts, pure } = state.quiz.q;
+            $('quizWord').textContent = pure ? '🎧 纯音标' : word.w;
+            $('quizWordCn').textContent = pure ? '听本音 · 选出对应音标' : word.cn;
+            $('quizFb').textContent = '';
+            $('quizFb').className = 'feedback';
+            $('quizStats').textContent = `答对 ${state.quiz.right} / ${state.quiz.total}`;
+            $('quizOpts').innerHTML = opts.map(o =>
+                `<button class="opt-btn" data-id="${o.id}">${symOf(o, state.accent)}</button>`).join('');
+            $('quizOpts').querySelectorAll('.opt-btn').forEach(btn => {
+                btn.addEventListener('click', () => answerQuiz(btn));
+            });
+        }
+        function answerQuiz(btn) {
+            if (state.quiz.answered) return;
+            state.quiz.answered = true;
+            state.quiz.total++;
+            const { p, word } = state.quiz.q;
+            const correct = btn.dataset.id === p.id;
+            const targetSym = state.accent === 'uk' ? p.uk : p.us;
+            const fullIPA = markIPA(ipaOf(word, state.accent), targetSym);
+            $('quizOpts').querySelectorAll('.opt-btn').forEach(b => {
+                b.disabled = true;
+                if (b.dataset.id === p.id) b.classList.add('correct');
+                else if (b === btn) b.classList.add('wrong');
+            });
+            const wi = state.progress.wrong.indexOf(p.id);
+            if (correct) {
+                state.quiz.right++;
+                if (wi >= 0) state.progress.wrong.splice(wi, 1); // 答对移出错题本
+                $('quizFb').innerHTML = `✓ 答对了！${word.w} ${fullIPA} 含 ${symOf(p, state.accent)}`;
+                $('quizFb').className = 'feedback ok';
+            } else {
+                if (wi < 0) state.progress.wrong.push(p.id);
+                $('quizFb').innerHTML = `✗ 是 ${symOf(p, state.accent)}。${word.w} ${fullIPA}，已加入错题本`;
+                $('quizFb').className = 'feedback bad';
+            }
+            saveProgress();
+            $('wrongBtn').textContent = `📕 错题重练（${state.progress.wrong.length}）`;
+            $('quizStats').textContent = `答对 ${state.quiz.right} / ${state.quiz.total}`;
+        }
+        function exitQuiz() {
+            $('quizPlay').style.display = 'none';
+            $('quizSetup').style.display = 'block';
+            state.quiz.wrongOnly = false;
+        }
+
+        // ===== 跟读训练 =====
+        function shadowList() {
+            const s = state.shadow.scope;
+            if (s === 'vowel') return PHONEMES.filter(isVowel);
+            if (s === 'cons') return PHONEMES.filter(p => !isVowel(p));
+            if (s === 'voiceless') return PHONEMES.filter(p => p.voice === '清');
+            if (s === 'voiced') return PHONEMES.filter(p => p.voice === '浊');
+            return PHONEMES;
+        }
+        function renderShadow() {
+            const list = shadowList();
+            if (state.shadow.idx >= list.length) state.shadow.idx = 0;
+            const done = new Set(state.progress.shadow);
+            const doneCount = list.filter(p => done.has(p.id)).length;
+            $('shadowCount').textContent = `${doneCount} / ${list.length}`;
+            $('shadowFill').style.width = list.length ? (doneCount / list.length * 100) + '%' : '0%';
+            if (!list.length) {
+                $('shadowCard').innerHTML = '<div class="empty-hint"><div class="big">🗣️</div>该范围没有音标</div>';
+                return;
+            }
+            const p = list[state.shadow.idx];
+            const g = GROUP_MAP[p.group];
+            const altAcc = otherAcc();
+            const diff = p.uk !== p.us;
+            const isDone = done.has(p.id);
+            const targetSym = state.accent === 'uk' ? p.uk : p.us;
+            const w = p.words[0];
+            $('shadowCard').innerHTML = `
+                <div class="shadow-stage">
+                    <div style="display:flex; gap:6px; justify-content:center; margin-bottom:8px;">
+                        <span class="tag accent">${g.name}</span>
+                        ${p.voice ? `<span class="tag">${p.voice}辅音</span>` : ''}
+                        <span class="tag">${state.shadow.idx + 1} / ${list.length}</span>
+                    </div>
+                    <div class="shadow-sym">${symOf(p, state.accent)}</div>
+                    ${diff ? `<div class="shadow-sym-sub">${FLAG[altAcc]} 另一口音：${symOf(p, altAcc)}</div>` : '<div class="shadow-sym-sub">英美同形</div>'}
+                    <div class="shadow-word">${w.w} <span style="font-size: 1rem; color: var(--text-secondary); font-weight: 400;">${w.cn}</span></div>
+                    <div class="shadow-ipa">${markIPA(ipaOf(w, state.accent), targetSym)}${w.uk !== w.us ? ` <span style="opacity:.6">/ ${ipaOf(w, altAcc)}</span>` : ''}</div>
+                    ${p.usNote ? `<div class="us-note" style="max-width: 640px; margin: 12px auto 0; text-align: left;">ℹ️ ${p.usNote}</div>` : ''}
+                    <div class="shadow-tips">
+                        <div class="tip-block tip-tips"><b>💡 口型要领</b>${p.tips}</div>
+                        <div class="tip-block tip-trap"><b>⚠️ 易错点</b>${p.trap}</div>
+                    </div>
+                    <div class="shadow-btns">
+                        <button class="btn-primary" id="shadowPlayBtn">🔊 标准音</button>
+                        <button class="btn-ghost" id="shadowSlowBtn">🐢 慢速 0.6x</button>
+                        <button class="btn-ghost" id="shadowAltBtn">🎧 听${ACC_LABEL[altAcc]}音对照</button>
+                        <button class="btn-ghost done-btn ${isDone ? 'done' : ''}" id="shadowDoneBtn">${isDone ? '✓ 已跟读' : '我已跟读 ✓'}</button>
+                    </div>
+                </div>
+                <div class="nav-row">
+                    <button class="btn-ghost" id="shadowPrevBtn">← 上一个</button>
+                    <button class="btn-ghost" id="shadowNextBtn">下一个 →</button>
+                </div>`;
+            $('shadowPlayBtn').addEventListener('click', () => TTS.speak(w.w, null, 1));
+            $('shadowSlowBtn').addEventListener('click', () => TTS.speak(w.w, null, 0.6));
+            $('shadowAltBtn').addEventListener('click', () => TTS.speak(w.w, otherAcc(), 1));
+            $('shadowDoneBtn').addEventListener('click', () => {
+                const i = state.progress.shadow.indexOf(p.id);
+                if (i >= 0) state.progress.shadow.splice(i, 1);
+                else state.progress.shadow.push(p.id);
+                saveProgress();
+                renderShadow();
+            });
+            $('shadowPrevBtn').addEventListener('click', () => {
+                state.shadow.idx = (state.shadow.idx - 1 + list.length) % list.length;
+                renderShadow();
+            });
+            $('shadowNextBtn').addEventListener('click', () => {
+                state.shadow.idx = (state.shadow.idx + 1) % list.length;
+                renderShadow();
+            });
+        }
+
+        // ===== 最小对立组 =====
+        function renderPairs() {
+            const wrongSet = new Set(state.progress.pairWrong);
+            $('pairGrid').innerHTML = MINIMAL_PAIRS.map(pair => {
+                const pa = PHONEMES.find(x => x.id === pair.p[0]);
+                const pb = PHONEMES.find(x => x.id === pair.p[1]);
+                const active = state.pairs.active && state.pairs.active.id === pair.id;
+                return `<div class="pair-card ${active ? 'active' : ''}" data-id="${pair.id}">
+                    <div class="pair-syms">${symOf(pa, state.accent)}<span class="vs">vs</span>${symOf(pb, state.accent)}</div>
+                    <div class="pair-words">${pair.a.w} ↔ ${pair.b.w}</div>
+                    <div class="pair-note">${wrongSet.has(pair.id) ? '📕 ' : ''}${pair.note}</div>
+                </div>`;
+            }).join('');
+            $('pairGrid').querySelectorAll('.pair-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    state.pairs.active = MINIMAL_PAIRS.find(x => x.id === card.dataset.id);
+                    state.pairs.right = 0; state.pairs.total = 0;
+                    renderPairs();
+                    renderPairPanel();
+                });
+            });
+        }
+        function renderPairPanel() {
+            const pair = state.pairs.active;
+            if (!pair) { $('pairQuizWrap').style.display = 'none'; return; }
+            $('pairQuizWrap').style.display = 'block';
+            const pa = PHONEMES.find(x => x.id === pair.p[0]);
+            const pb = PHONEMES.find(x => x.id === pair.p[1]);
+            const altAcc = otherAcc();
+            const target = state.pairs.target;
+            const answered = state.pairs.answered;
+            const choiceRow = target ? `
+                <div class="choice-row">
+                    ${['a', 'b'].map(k => {
+                        const w = pair[k];
+                        let cls = 'choice-btn';
+                        if (answered) {
+                            if (k === target) cls += ' correct';
+                            else if (k === state.pairs.picked) cls += ' wrong';
+                        }
+                        return `<button class="${cls}" data-choice="${k}" ${answered ? 'disabled' : ''}>
+                            <span class="choice-word">${w.w}</span>
+                            <span class="choice-sym">${ipaOf(w, state.accent)}</span>
+                        </button>`;
+                    }).join('')}
+                </div>` : '';
+            const reveal = answered ? `
+                <div class="reveal-grid">
+                    ${[pair.a, pair.b].map(w => `
+                        <div class="reveal-cell">
+                            <div class="rw">${w.w}</div>
+                            <div class="rc">${w.cn}</div>
+                            <div class="ri">${ipaOf(w, state.accent)}${w.uk !== w.us ? ` · ${ipaOf(w, altAcc)}` : ''}</div>
+                            <div class="reveal-btns">
+                                <button class="play-btn-sm" data-pw="${w.w}" title="播放当前口音">🔊</button>
+                                <button class="play-btn-sm alt-play" data-pw-alt="${w.w}" title="听另一口音">🎧对照</button>
+                            </div>
+                        </div>`).join('')}
+                </div>` : '';
+            $('pairPanel').innerHTML = `
+                <div class="pair-title">
+                    当前训练：${pair.a.w} ↔ ${pair.b.w}
+                    <span class="tag">${symOf(pa, state.accent)} vs ${symOf(pb, state.accent)}</span>
+                    <span class="quiz-stats" style="margin-left:auto;">答对 ${state.pairs.right} / ${state.pairs.total}</span>
+                </div>
+                ${(!target && !answered) ? `
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-primary" id="pairPlayBtn">🔊 播放（随机一词）</button>
+                        <button class="btn-ghost" id="pairCompareBtn">⚖️ 对比播放（A→B）</button>
+                    </div>` : ''}
+                ${choiceRow}
+                <div class="feedback ${answered ? (state.pairs.lastCorrect ? 'ok' : 'bad') : ''}" id="pairFb">${answered ? pairFeedbackHTML() : ''}</div>
+                ${reveal}
+                ${answered ? `
+                    <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+                        <button class="btn-primary" id="pairNextBtn">🔄 下一轮</button>
+                        <button class="btn-ghost" id="pairCloseBtn">收起训练</button>
+                    </div>` : ''}
+            `;
+            bindPairPanel();
+        }
+        function pairFeedbackHTML() {
+            const pair = state.pairs.active;
+            const correct = state.pairs.lastCorrect;
+            const w = state.pairs.target === 'a' ? pair.a : pair.b;
+            return correct
+                ? `✓ 答对了！刚播放的是 ${w.w}（${w.cn}）`
+                : `✗ 刚播放的是 ${w.w}（${w.cn}）${ipaOf(w, state.accent)}，已标记易混`;
+        }
+        function bindPairPanel() {
+            const pair = state.pairs.active;
+            if (!pair) return;
+            const playBtn = $('pairPlayBtn');
+            if (playBtn) playBtn.addEventListener('click', () => {
+                state.pairs.target = Math.random() < 0.5 ? 'a' : 'b';
+                state.pairs.answered = false;
+                TTS.speak(state.pairs.target === 'a' ? pair.a.w : pair.b.w);
+                renderPairPanel();
+            });
+            const cmpBtn = $('pairCompareBtn');
+            if (cmpBtn) cmpBtn.addEventListener('click', () => TTS.speakSeq([pair.a.w, pair.b.w]));
+            $('pairPanel').querySelectorAll('.choice-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (state.pairs.answered || !state.pairs.target) return;
+                    state.pairs.answered = true;
+                    state.pairs.picked = btn.dataset.choice;
+                    state.pairs.total++;
+                    const correct = state.pairs.picked === state.pairs.target;
+                    state.pairs.lastCorrect = correct;
+                    if (correct) {
+                        state.pairs.right++;
+                        const i = state.progress.pairWrong.indexOf(pair.id);
+                        if (i >= 0) state.progress.pairWrong.splice(i, 1);
+                    } else {
+                        if (!state.progress.pairWrong.includes(pair.id)) state.progress.pairWrong.push(pair.id);
+                    }
+                    saveProgress();
+                    renderPairPanel();
+                });
+            });
+            const nextBtn = $('pairNextBtn');
+            if (nextBtn) nextBtn.addEventListener('click', () => {
+                state.pairs.target = null;
+                state.pairs.picked = null;
+                state.pairs.answered = false;
+                renderPairPanel();
+            });
+            const closeBtn = $('pairCloseBtn');
+            if (closeBtn) closeBtn.addEventListener('click', () => {
+                state.pairs.active = null;
+                $('pairQuizWrap').style.display = 'none';
+                renderPairs();
+            });
+            $('pairPanel').querySelectorAll('[data-pw]').forEach(btn => {
+                btn.addEventListener('click', () => TTS.speak(btn.dataset.pw));
+            });
+            $('pairPanel').querySelectorAll('[data-pw-alt]').forEach(btn => {
+                btn.addEventListener('click', () => TTS.speak(btn.dataset.pwAlt, otherAcc()));
+            });
+        }
+
+        // ===== 渲染入口 =====
+        function renderAll() {
+            renderStudy();
+            renderQuizSetupState();
+            renderShadow();
+            renderPairs();
+            renderPairPanel();
+        }
+        function renderQuizSetupState() {
+            $('wrongBtn').textContent = `📕 错题重练（${state.progress.wrong.length}）`;
+        }
+
+        // ===== 初始化 =====
+        function init() {
+            initTheme();
+            TTS.init();
+            $('themeBtn').addEventListener('click', toggleTheme);
+            $('accUK').addEventListener('click', () => setAccent('uk'));
+            $('accUS').addEventListener('click', () => setAccent('us'));
+            document.querySelectorAll('.mode-tab').forEach(t => {
+                t.addEventListener('click', () => switchMode(t.dataset.mode));
+            });
+            $('quizStartBtn').addEventListener('click', () => startQuiz(false));
+            $('wrongBtn').addEventListener('click', () => startQuiz(true));
+            $('quizReplayBtn').addEventListener('click', () => {
+                if (state.quiz.q) state.quiz.q.pure ? playPhoneme(state.quiz.q.p) : TTS.speak(state.quiz.q.word.w);
+            });
+            $('quizNextBtn').addEventListener('click', () => genQuestion(true));
+            $('quizExitBtn').addEventListener('click', exitQuiz);
+            $('shadowScope').addEventListener('change', e => {
+                state.shadow.scope = e.target.value;
+                state.shadow.idx = 0;
+                renderShadow();
+            });
+            $('studyModal').addEventListener('click', e => {
+                if (e.target === $('studyModal')) closeStudyModal();
+            });
+            setAccent(state.accent); // 恢复口音偏好并全量渲染
+            updateTopInfo();
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

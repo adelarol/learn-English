@@ -544,6 +544,22 @@
         linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(249,115,22,0.08) 50%, rgba(239,68,68,0.12) 100%),
         linear-gradient(180deg, #0f172a 0%, #0b1020 100%);
     }
+    .card.phonetics {
+      background:
+        linear-gradient(135deg, rgba(34,211,238,0.18) 0%, rgba(6,182,212,0.10) 50%, rgba(16,185,129,0.16) 100%),
+        linear-gradient(180deg, #0f172a 0%, #0b1020 100%);
+    }
+    .card.phonetics .card-icon {
+      background: linear-gradient(135deg, rgba(34,211,238,0.25), rgba(16,185,129,0.25));
+      box-shadow: 0 8px 24px rgba(34,211,238,0.25);
+    }
+    .card.phonetics .card-title {
+      background: linear-gradient(135deg, #67e8f9 0%, #6ee7b7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card.phonetics .card-action { color: #67e8f9; }
     .card-top {
       display: flex;
       justify-content: space-between;
@@ -1117,6 +1133,7 @@
       <a class="nav-link" href="雅思单词背诵.html">📚 <span class="only-pc">雅思刷词</span></a>
       <a class="nav-link" href="雅思听力刷题.html">🎧 <span class="only-pc">雅思听力</span></a>
       <a class="nav-link" href="跟读练习.html">🗣️ <span class="only-pc">跟读练习</span></a>
+      <a class="nav-link" href="音标训练.html">🔊 <span class="only-pc">音标训练</span></a>
       <a class="nav-link" href="#" onclick="openTextbookModal(); return false;">📖 <span class="only-pc">课本词汇</span></a>
       <a class="nav-link" href="#" onclick="openUserModal(); return false;" id="userNavLink">👤 <span class="only-pc" id="currentUserText">默认用户</span></a>
       <a class="nav-link primary" href="雅思单词背诵.html">开始学习</a>
@@ -1327,10 +1344,32 @@
         </div>
       </a>
 
+      <!-- 音标训练 -->
+      <a class="card phonetics" href="音标训练.html" onmousemove="const rect=this.getBoundingClientRect();this.style.setProperty('--mx',(event.clientX-rect.left)+'px');this.style.setProperty('--my',(event.clientY-rect.top)+'px');">
+        <div class="card-top">
+          <div class="card-num">04 · Phonetics</div>
+          <div class="card-icon">🔊</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">音标训练</h3>
+          <p class="card-desc">英式 / 美式双口音 44 音标训练。口型要领 + 例词点读，听音辨标、逐个跟读打卡、易混音对辨析，从音素层面纠正发音。</p>
+          <div class="card-tags">
+            <span class="card-tag">英美双口音</span>
+            <span class="card-tag">口型要领</span>
+            <span class="card-tag">听音辨标</span>
+            <span class="card-tag">易混音对</span>
+          </div>
+        </div>
+        <div class="card-foot">
+          <div class="card-action">进入训练</div>
+          <div class="card-arrow">→</div>
+        </div>
+      </a>
+
       <!-- 课本词汇卡片（弹窗选择器） -->
       <div class="card textbook-combined" onclick="openTextbookModal()" onmousemove="const rect=this.getBoundingClientRect();this.style.setProperty('--mx',(event.clientX-rect.left)+'px');this.style.setProperty('--my',(event.clientY-rect.top)+'px');">
         <div class="card-top">
-          <div class="card-num">04 · Textbook</div>
+          <div class="card-num">05 · Textbook</div>
           <div class="card-icon">📖</div>
         </div>
         <div class="card-body">
@@ -1360,6 +1399,11 @@
       </div>
       <div class="modal-body">
         <div class="textbook-grid">
+          <a href="译林六年级单词.html" class="textbook-item">
+            <span class="textbook-icon">📖</span>
+            <span class="textbook-name">译林版六年级</span>
+            <span class="textbook-desc">小学英语</span>
+          </a>
           <a href="译林八年级单词.html" class="textbook-item">
             <span class="textbook-icon">📘</span>
             <span class="textbook-name">译林版八年级</span>
@@ -1395,6 +1439,7 @@
         <a href="雅思单词背诵.html">雅思单词</a>
         <a href="雅思听力刷题.html">雅思听力</a>
         <a href="跟读练习.html">跟读练习</a>
+        <a href="音标训练.html">音标训练</a>
         <a href="#" onclick="openTextbookModal(); return false;">课本词汇</a>
       </div>
     </div>

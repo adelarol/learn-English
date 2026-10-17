@@ -111,25 +111,6 @@
         .control-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
         .control-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* 口音切换 */
-        .accent-switch {
-            display: flex;
-            border: 1px solid var(--border-color);
-            border-radius: 999px;
-            overflow: hidden;
-            background: var(--bg-tertiary);
-        }
-        .acc-btn {
-            padding: 8px 16px;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-        .acc-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
-
         /* ===== 模式标签 ===== */
         .mode-bar {
             max-width: 1200px;
@@ -335,12 +316,10 @@
             display: flex; align-items: center; justify-content: center;
         }
         .play-btn-sm:hover { border-color: var(--accent); transform: translateY(-2px); }
-        .play-btn-sm.alt-play { color: var(--text-secondary); font-size: 0.75rem; width: 44px; }
         .modal-foot { display: flex; gap: 10px; margin-top: 16px; }
         .phon-play-row { display: flex; gap: 8px; margin: 14px 0 4px; flex-wrap: wrap; }
         .phon-play-row .btn-ghost { flex: 1; min-width: 0; }
         .uk-todo-note { margin: 6px 0 0; padding: 8px 12px; border-radius: 8px; background: var(--note-bg); color: var(--text-secondary); font-size: 0.8rem; }
-        a.btn-ghost { text-decoration: none; text-align: center; }
 
         /* ===== 听音辨标 ===== */
         .quiz-card, .shadow-card, .pair-panel {
@@ -454,6 +433,13 @@
         .choice-btn.wrong .choice-word { color: var(--bad); }
         .reveal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
         @media (max-width: 560px) { .reveal-grid { grid-template-columns: 1fr; } }
+        .pair-sents { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+        @media (max-width: 560px) { .pair-sents { grid-template-columns: 1fr; } }
+        .sent-col { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; }
+        .sent-head { font-weight: 600; font-size: 0.82rem; color: var(--accent); margin-bottom: 6px; font-family: ui-monospace, 'SF Mono', Consolas, monospace; }
+        .sent-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.88rem; line-height: 1.55; }
+        .sent-item + .sent-item { border-top: 1px dashed var(--border-color); }
+        .sent-item .play-btn-sm { flex: none; }
         .reveal-cell {
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
@@ -498,14 +484,10 @@
                 <a href="index.html" class="back-btn">← 返回</a>
                 <div>
                     <h1 class="page-title">音标训练</h1>
-                    <div class="page-info">44 音标 · 英美双口音 · <span id="infoStats">已学 0 · 错题 0</span></div>
+                    <div class="page-info">48 音标 · 真人女声发音 · <span id="infoStats">已学 0 · 错题 0</span></div>
                 </div>
             </div>
             <div class="bar-right">
-                <div class="accent-switch" title="切换口音（全局生效）">
-                    <button class="acc-btn" id="accUK">🇬🇧 英音</button>
-                    <button class="acc-btn" id="accUS">🇺🇸 美音</button>
-                </div>
                 <button class="control-btn" id="themeBtn" title="切换主题">
                     <span id="themeIcon">🌙</span>
                 </button>
@@ -525,7 +507,7 @@
 
         <!-- ===== 音标学习 ===== -->
         <section class="mode-sec active" id="studySec">
-            <p class="sec-intro">点击音标卡查看口型要领与例词，点 🔊 听当前口音、点 🎧 听另一口音对照。已学过的音标会打 ✓。</p>
+            <p class="sec-intro">点击音标卡查看口型要领与例词，卡上的 🔊 播放真人发音。已学过的音标会打 ✓。</p>
             <div id="studyGrid"></div>
         </section>
 
@@ -535,9 +517,9 @@
                 <p class="sec-intro">听一个例词发音，选出它包含的目标音标。练"听得准"，才能"说得准"。答错的音标会进入错题本。</p>
                 <div class="setup-row">
                     <select class="selector" id="quizScope">
-                        <option value="all">全部 44 音标</option>
+                        <option value="all">全部 48 音标</option>
                         <option value="vowel">仅元音（20）</option>
-                        <option value="cons">仅辅音（24）</option>
+                        <option value="cons">仅辅音（28）</option>
                     </select>
                     <button class="btn-ghost" id="wrongBtn">📕 错题重练（0）</button>
                     <button class="btn-primary" id="quizStartBtn">开始练习</button>
@@ -566,7 +548,7 @@
 
         <!-- ===== 跟读训练 ===== -->
         <section class="mode-sec" id="shadowSec">
-            <p class="sec-intro">看口型要领 → 听标准音 → 出声模仿。可切英/美音、放慢速度、随时听另一口音对照。读完点"我已跟读"打卡。</p>
+            <p class="sec-intro">看口型要领 → 听标准音 → 出声模仿。可放慢速度反复跟读。读完点"我已跟读"打卡。</p>
             <div class="setup-row">
                 <select class="selector" id="shadowScope">
                     <option value="all">全部音标</option>
@@ -636,7 +618,7 @@
             } catch (e) { return empty; }
         }
         const state = {
-            accent: localStorage.getItem('phonetics_accent') === 'uk' ? 'uk' : 'us', // 默认美音（真人录音），显式存过 uk 才切英音
+            accent: 'us', // 统一使用美音真人女声录音，页面不再提供口音切换
             mode: 'study',
             progress: loadProgress(),
             quiz: { scope: 'all', wrongOnly: false, q: null, answered: false, right: 0, total: 0 },
@@ -704,12 +686,14 @@
             }
         };
 
-        // ===== 音标本音播放：离线 wav 优先 -> tone 载体 TTS -> 代表词兜底 =====
+        // ===== 音标本音播放：离线真人录音优先 -> 代表词 TTS 兜底 =====
         const AUDIO_BASE = 'audio/phonetics/';
         const AUDIO_EXTS = ['wav', 'mp3', 'ogg']; // 旧 piper wav / freesound 真人 mp3 / Commons 真人 ogg
         const audioCache = new Map(); // 'acc/slug' -> HTMLAudioElement | 'missing'
         function playPhoneme(p, accent, rate) {
             const acc = accent || state.accent;
+            // 已确认没有真人录音：直接走 TTS 兜底，不再发无用请求
+            if (!hasPhonemeAudio(p.slug, acc)) return playTone(p, acc, rate);
             const key = acc + '/' + p.slug;
             const cached = audioCache.get(key);
             if (cached === 'missing') return playTone(p, acc, rate);
@@ -731,8 +715,8 @@
             a.play().then(() => audioCache.set(key, a)).catch(() => tryPlay(key, p, acc, rate, i + 1));
         }
         function playTone(p, accent, rate) {
-            if (p.tone) TTS.speak(p.tone, accent, rate || 0.65);
-            else TTS.speak(p.words[0].w, accent, rate || 0.9);
+            // 兜底：TTS 读不了孤立音标，改读含该音标的代表词
+            TTS.speak(p.words[0].w, accent, rate || 0.9);
         }
 
         // ===== 主题 =====
@@ -746,15 +730,6 @@
             document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
             localStorage.setItem('yilinDarkMode', dark);
             $('themeIcon').textContent = dark ? '☀️' : '🌙';
-        }
-
-        // ===== 口音切换 =====
-        function setAccent(acc) {
-            state.accent = acc;
-            localStorage.setItem('phonetics_accent', acc);
-            $('accUK').classList.toggle('active', acc === 'uk');
-            $('accUS').classList.toggle('active', acc === 'us');
-            renderAll();
         }
 
         // ===== 模式切换 =====
@@ -801,6 +776,8 @@
             const g = GROUP_MAP[p.group];
             const diff = p.uk !== p.us;
             const altAcc = otherAcc();
+            const hasAudio = hasPhonemeAudio(p.slug, state.accent);
+            const audioNote = hasAudio ? '' : 'ℹ️ 该音暂无真人本音录音，此处为含该音标的代表词合成读音';
             const rows = p.words.map(w => {
                 const cur = ipaOf(w, state.accent);
                 const alt = ipaOf(w, altAcc);
@@ -811,11 +788,10 @@
                         <div class="word-text">${w.w}</div>
                         <div class="word-cn">${w.cn}</div>
                     </div>
-                    <div class="word-ipa">${markIPA(cur, targetSym)}</div>
-                    ${showAlt ? `<div class="word-ipa alt">${alt}</div>` : ''}
+                    <div class="word-ipa">${FLAG[state.accent]} ${markIPA(cur, targetSym)}</div>
+                    ${showAlt ? `<div class="word-ipa alt">${FLAG[altAcc]} ${alt}</div>` : ''}
                     <div class="word-btns">
-                        <button class="play-btn-sm" data-play="${w.w}" title="播放当前口音">🔊</button>
-                        <button class="play-btn-sm alt-play" data-play-alt="${w.w}" title="听另一口音对照">🎧对照</button>
+                        <button class="play-btn-sm" data-play="${w.w}" title="播放例词">🔊</button>
                     </div>
                 </div>`;
             }).join('');
@@ -823,7 +799,7 @@
                 <div class="modal-head">
                     <div>
                         <div class="modal-sym">${symOf(p, state.accent)}</div>
-                        ${diff ? `<div class="modal-sym-sub">${FLAG[altAcc]} 另一口音：${symOf(p, altAcc)}</div>` : ''}
+                        ${diff ? `<div class="modal-sym-sub">${FLAG.uk} 英音写法：${symOf(p, 'uk')}</div>` : ''}
                     </div>
                     <div class="modal-head-right">
                         <button class="modal-close" id="modalCloseBtn">×</button>
@@ -838,15 +814,12 @@
                 <div class="tip-block tip-tips"><b>💡 口型要领</b>${p.tips}</div>
                 <div class="tip-block tip-trap"><b>⚠️ 易错点</b>${p.trap}</div>
                 <div class="phon-play-row">
-                    <button class="btn-ghost" id="phonMainBtn">🔊 音标本音</button>
-                    <button class="btn-ghost" id="phonAltBtn">🎧 对照${FLAG[altAcc]}</button>
-                    <button class="btn-ghost" id="phonWordBtn">🗣️ 例词</button>
+                    <button class="btn-ghost" id="phonMainBtn">${hasAudio ? '🔊 音标本音' : '🔊 近似发音'}</button>
                 </div>
-                ${state.accent === 'uk' ? '<div class="uk-todo-note">🇬🇧 英音本音真人录音整理中（敬请期待），当前为合成近似读音</div>' : ''}
+                ${audioNote ? `<div class="uk-todo-note">${audioNote}</div>` : ''}
                 <div class="word-list">${rows}</div>
                 <div class="modal-foot">
                     <button class="btn-ghost done-btn ${learned ? 'done' : ''}" id="learnedBtn">${learned ? '✓ 已学过' : '标记已学'}</button>
-                    <a class="btn-ghost" href="https://www.bbc.co.uk/learningenglish/english/features/pronunciation" target="_blank" rel="noopener">📺 BBC 发音教程</a>
                 </div>`;
             $('studyModal').classList.add('active');
             $('modalCloseBtn').addEventListener('click', closeStudyModal);
@@ -861,12 +834,7 @@
             $('modalBody').querySelectorAll('[data-play]').forEach(btn => {
                 btn.addEventListener('click', () => TTS.speak(btn.dataset.play));
             });
-            $('modalBody').querySelectorAll('[data-play-alt]').forEach(btn => {
-                btn.addEventListener('click', () => TTS.speak(btn.dataset.playAlt, otherAcc()));
-            });
             $('phonMainBtn').addEventListener('click', () => playPhoneme(p));
-            $('phonAltBtn').addEventListener('click', () => playPhoneme(p, altAcc));
-            $('phonWordBtn').addEventListener('click', () => TTS.speak(p.words[0].w));
             if (!silent) playPhoneme(p); // 打开即听本音（无音频时自动兜底）
         }
         function closeStudyModal() { $('studyModal').classList.remove('active'); }
@@ -905,7 +873,7 @@
             const word = pickOne(p.words);
             const distractPool = PHONEMES.filter(x => x.id !== p.id && isVowel(x) === isVowel(p));
             const opts = shuffle([p, ...shuffle(distractPool).slice(0, 3)]);
-            const pure = Math.random() < 0.4; // 纯音标听辨：只播本音，不给词线索
+            const pure = hasPhonemeAudio(p.slug, state.accent) && Math.random() < 0.4; // 纯音标听辨：只播本音（需有真人录音），否则给词线索
             state.quiz.q = { p, word, opts, pure };
             state.quiz.answered = false;
             renderQuestion();
@@ -993,9 +961,9 @@
                         <span class="tag">${state.shadow.idx + 1} / ${list.length}</span>
                     </div>
                     <div class="shadow-sym">${symOf(p, state.accent)}</div>
-                    ${diff ? `<div class="shadow-sym-sub">${FLAG[altAcc]} 另一口音：${symOf(p, altAcc)}</div>` : '<div class="shadow-sym-sub">英美同形</div>'}
+                    ${diff ? `<div class="shadow-sym-sub">${FLAG.uk} 英音写法：${symOf(p, 'uk')}</div>` : '<div class="shadow-sym-sub">英美同形</div>'}
                     <div class="shadow-word">${w.w} <span style="font-size: 1rem; color: var(--text-secondary); font-weight: 400;">${w.cn}</span></div>
-                    <div class="shadow-ipa">${markIPA(ipaOf(w, state.accent), targetSym)}${w.uk !== w.us ? ` <span style="opacity:.6">/ ${ipaOf(w, altAcc)}</span>` : ''}</div>
+                    <div class="shadow-ipa">${FLAG[state.accent]} ${markIPA(ipaOf(w, state.accent), targetSym)}${w.uk !== w.us ? ` <span style="opacity:.6">${FLAG[altAcc]} ${ipaOf(w, altAcc)}</span>` : ''}</div>
                     ${p.usNote ? `<div class="us-note" style="max-width: 640px; margin: 12px auto 0; text-align: left;">ℹ️ ${p.usNote}</div>` : ''}
                     <div class="shadow-tips">
                         <div class="tip-block tip-tips"><b>💡 口型要领</b>${p.tips}</div>
@@ -1004,7 +972,6 @@
                     <div class="shadow-btns">
                         <button class="btn-primary" id="shadowPlayBtn">🔊 标准音</button>
                         <button class="btn-ghost" id="shadowSlowBtn">🐢 慢速 0.6x</button>
-                        <button class="btn-ghost" id="shadowAltBtn">🎧 听${ACC_LABEL[altAcc]}音对照</button>
                         <button class="btn-ghost done-btn ${isDone ? 'done' : ''}" id="shadowDoneBtn">${isDone ? '✓ 已跟读' : '我已跟读 ✓'}</button>
                     </div>
                 </div>
@@ -1014,7 +981,6 @@
                 </div>`;
             $('shadowPlayBtn').addEventListener('click', () => TTS.speak(w.w, null, 1));
             $('shadowSlowBtn').addEventListener('click', () => TTS.speak(w.w, null, 0.6));
-            $('shadowAltBtn').addEventListener('click', () => TTS.speak(w.w, otherAcc(), 1));
             $('shadowDoneBtn').addEventListener('click', () => {
                 const i = state.progress.shadow.indexOf(p.id);
                 if (i >= 0) state.progress.shadow.splice(i, 1);
@@ -1084,11 +1050,18 @@
                         <div class="reveal-cell">
                             <div class="rw">${w.w}</div>
                             <div class="rc">${w.cn}</div>
-                            <div class="ri">${ipaOf(w, state.accent)}${w.uk !== w.us ? ` · ${ipaOf(w, altAcc)}` : ''}</div>
+                            <div class="ri">${FLAG[state.accent]} ${ipaOf(w, state.accent)}${w.uk !== w.us ? ` · ${FLAG[altAcc]} ${ipaOf(w, altAcc)}` : ''}</div>
                             <div class="reveal-btns">
-                                <button class="play-btn-sm" data-pw="${w.w}" title="播放当前口音">🔊</button>
-                                <button class="play-btn-sm alt-play" data-pw-alt="${w.w}" title="听另一口音">🎧对照</button>
+                                <button class="play-btn-sm" data-pw="${w.w}" title="播放例词">🔊</button>
                             </div>
+                        </div>`).join('')}
+                </div>` : '';
+            const sents = (pair.sa && pair.sb) ? `
+                <div class="pair-sents">
+                    ${[['a', pa, pair.sa], ['b', pb, pair.sb]].map(([, pp, list]) => `
+                        <div class="sent-col">
+                            <div class="sent-head">${symOf(pp, state.accent)} 例句 · 只含此音</div>
+                            ${list.map(s => `<div class="sent-item"><button class="play-btn-sm" data-sent="${s.replace(/"/g, '&quot;')}" title="朗读例句">🔊</button><span>${s}</span></div>`).join('')}
                         </div>`).join('')}
                 </div>` : '';
             $('pairPanel').innerHTML = `
@@ -1102,6 +1075,7 @@
                         <button class="btn-primary" id="pairPlayBtn">🔊 播放（随机一词）</button>
                         <button class="btn-ghost" id="pairCompareBtn">⚖️ 对比播放（A→B）</button>
                     </div>` : ''}
+                ${sents}
                 ${choiceRow}
                 <div class="feedback ${answered ? (state.pairs.lastCorrect ? 'ok' : 'bad') : ''}" id="pairFb">${answered ? pairFeedbackHTML() : ''}</div>
                 ${reveal}
@@ -1133,6 +1107,9 @@
             });
             const cmpBtn = $('pairCompareBtn');
             if (cmpBtn) cmpBtn.addEventListener('click', () => TTS.speakSeq([pair.a.w, pair.b.w]));
+            $('pairPanel').querySelectorAll('[data-sent]').forEach(btn => {
+                btn.addEventListener('click', () => TTS.speak(btn.dataset.sent, state.accent, 0.92));
+            });
             $('pairPanel').querySelectorAll('.choice-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     if (state.pairs.answered || !state.pairs.target) return;
@@ -1168,9 +1145,6 @@
             $('pairPanel').querySelectorAll('[data-pw]').forEach(btn => {
                 btn.addEventListener('click', () => TTS.speak(btn.dataset.pw));
             });
-            $('pairPanel').querySelectorAll('[data-pw-alt]').forEach(btn => {
-                btn.addEventListener('click', () => TTS.speak(btn.dataset.pwAlt, otherAcc()));
-            });
         }
 
         // ===== 渲染入口 =====
@@ -1190,8 +1164,6 @@
             initTheme();
             TTS.init();
             $('themeBtn').addEventListener('click', toggleTheme);
-            $('accUK').addEventListener('click', () => setAccent('uk'));
-            $('accUS').addEventListener('click', () => setAccent('us'));
             document.querySelectorAll('.mode-tab').forEach(t => {
                 t.addEventListener('click', () => switchMode(t.dataset.mode));
             });
@@ -1210,7 +1182,7 @@
             $('studyModal').addEventListener('click', e => {
                 if (e.target === $('studyModal')) closeStudyModal();
             });
-            setAccent(state.accent); // 恢复口音偏好并全量渲染
+            renderAll();
             updateTopInfo();
         }
         document.addEventListener('DOMContentLoaded', init);

@@ -6,6 +6,12 @@
   许可: 见包内各音频页面（freesound 全站仅收 CC 许可）。
   作者请求: 使用了这些录音请邮件告知 speechbanana@jhu.edu
 
-【英音 uk】暂无离线录音，由浏览器 TTS 合成近似读音（待整理）。
+【美音补缺 us】freesound.org · ipapronunciations（/b/、/ð/ 两个单音）
+  作者页: https://freesound.org/people/ipapronunciations/
+  文件: [b] - Voiced bilabial plosive（sound 640377）
+        [ð] Voiced dental fricative（sound 640396）
+  许可: 见对应音频页面（CC 许可）。
+
+【英音 uk】暂无离线录音。
 
 本站为个人学习用途，随仓库再分发并在此署名。

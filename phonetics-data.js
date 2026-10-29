@@ -11,8 +11,7 @@ const PHONETICS_GROUPS = [
     { key: 'fricative', name: '摩擦音', desc: '气流从缝隙中挤出' },
     { key: 'affricate', name: '破擦音', desc: '先堵塞，后摩擦放开' },
     { key: 'nasal', name: '鼻音', desc: '气流从鼻腔通过' },
-    { key: 'other', name: '边音 · 近音', desc: '舌侧气流 / 无阻碍滑音' },
-    { key: 'cluster', name: '辅音连缀', desc: '两个辅音连读，一气呵成' }
+    { key: 'other', name: '边音 · 近音', desc: '舌侧气流 / 无阻碍滑音' }
 ];
 
 const PHONEMES = [
@@ -393,40 +392,6 @@ const PHONEMES = [
         { w: 'we', uk: 'wiː', us: 'wiː', cn: '我们' },
         { w: 'window', uk: 'ˈwɪndəʊ', us: 'ˈwɪndoʊ', cn: '窗户' },
         { w: 'one', uk: 'wʌn', us: 'wʌn', cn: '一' }
-      ] },
-
-    // ===== 辅音连缀 =====
-    { id: 'ts', group: 'cluster', voice: '清', uk: 'ts', us: 'ts',
-      tips: '/t/ 与 /s/ 连读：先憋气堵住，再摩擦放开，中间不停顿。',
-      trap: '不要读成中文"次"加元音；cats 词尾要轻促干净。',
-      words: [
-        { w: 'cats', uk: 'kæts', us: 'kæts', cn: '猫（复数）' },
-        { w: 'bits', uk: 'bɪts', us: 'bɪts', cn: '碎片' },
-        { w: 'meets', uk: 'miːts', us: 'miːts', cn: '遇见' }
-      ] },
-    { id: 'dz', group: 'cluster', voice: '浊', uk: 'dz', us: 'dz',
-      tips: '/d/ 与 /z/ 连读：声带振动，堵塞后摩擦放开。',
-      trap: '词尾常被吞掉或读成 /s/。beds 的 d 要轻碰齿龈再滑向 z。',
-      words: [
-        { w: 'beds', uk: 'bedz', us: 'bɛdz', cn: '床（复数）' },
-        { w: 'needs', uk: 'niːdz', us: 'niːdz', cn: '需要' },
-        { w: 'words', uk: 'wɜːdz', us: 'wɜːrdz', cn: '单词' }
-      ] },
-    { id: 'tr', group: 'cluster', voice: '清', uk: 'tr', us: 'tr',
-      tips: '/t/ 与 /r/ 连读：舌尖从齿龈直接卷起，一次成音。',
-      trap: '不要读成中文"戳"或"出"，/t/ 与 /r/ 之间不能有元音。',
-      words: [
-        { w: 'tree', uk: 'triː', us: 'triː', cn: '树' },
-        { w: 'try', uk: 'traɪ', us: 'traɪ', cn: '尝试' },
-        { w: 'train', uk: 'treɪn', us: 'treɪn', cn: '火车' }
-      ] },
-    { id: 'dr', group: 'cluster', voice: '浊', uk: 'dr', us: 'dr',
-      tips: '/d/ 与 /r/ 连读：声带振动，舌尖从齿龈卷起滑出。',
-      trap: '与 /dʒ/ 混（dream 听着像 "jream"）。d 要清晰再滑向 r。',
-      words: [
-        { w: 'dream', uk: 'driːm', us: 'driːm', cn: '梦' },
-        { w: 'drink', uk: 'drɪŋk', us: 'drɪŋk', cn: '喝' },
-        { w: 'drive', uk: 'draɪv', us: 'draɪv', cn: '驾驶' }
       ] }
 ];
 
@@ -611,20 +576,25 @@ const PHONEME_SLUGS = {
     'ʃ': 'sh',    'ʒ': 'zh',     'h': 'h',
     'tʃ': 'ch',   'dʒ': 'j',
     'm': 'm',     'n': 'n',      'ŋ': 'ng',
-    'l': 'l',     'r': 'r',      'j': 'y',     'w': 'w',
-    'ts': 'ts',   'dz': 'dz',    'tr': 'tr',   'dr': 'dr'
+    'l': 'l',     'r': 'r',      'j': 'y',     'w': 'w'
 };
 // 把 slug 绑定到每条音标数据上
 PHONEMES.forEach(p => { p.slug = PHONEME_SLUGS[p.id]; });
 
 // 已入库的真人录音 slug（与 audio/phonetics/ 实际文件一一对应）
-// 未列入者没有真人本音录音，由页面 TTS 朗读含该音标的代表词兜底
-// 用 tools/download_phoneme_audio.py 补齐音频后，请同步更新这两张表
 const PHONEME_AUDIO = {
     us: ['ih', 'e', 'ae', 'uh', 'o', 'u', 'schwa', 'ee', 'ah', 'aw', 'oo', 'er',
          'ay', 'eye', 'oy', 'oh', 'ow',
-         'p', 't', 'd', 'k', 'g', 'f', 'v', 'th', 's', 'z', 'sh', 'zh', 'h',
+         'p', 'b', 't', 'd', 'k', 'g', 'f', 'v', 'th', 'dh', 's', 'z', 'sh', 'zh', 'h',
          'ch', 'j', 'm', 'n', 'ng', 'l', 'r', 'y', 'w'],
-    uk: []  // 英音真人录音尚未入库，全部走 TTS 兜底
+    uk: []  // 英音真人录音尚未入库
 };
-function hasPhonemeAudio(slug, acc) { return PHONEME_AUDIO[acc].includes(slug); }
+function hasPhonemeAudio(slug, acc) { return (PHONEME_AUDIO[acc] || []).includes(slug); }
+
+// 美音中没有独立央化双元音 /ɪə/ /eə/ /ʊə/，由两个真人音素连读还原
+// 页面按顺序播放这些 slug，用真人录音拼出 /ɪr/ /er/ /ʊr/
+const PHONEME_US_CHAIN = {
+    'ear': ['ih', 'r'],
+    'air': ['e', 'r'],
+    'oor': ['u', 'r']
+};

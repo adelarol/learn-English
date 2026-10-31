@@ -415,6 +415,56 @@
             margin-bottom: 16px;
         }
 
+        /* ===== 听音辨标 ===== */
+        .quiz-panel {
+            max-width: 640px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 22px;
+        }
+        .quiz-stats { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.82rem; color: var(--text-secondary); }
+        .quiz-stats b { color: var(--text-primary); font-size: 1rem; font-weight: 600; }
+        .quiz-stage { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 26px 0 20px; }
+        .quiz-play {
+            width: 86px;
+            height: 86px;
+            border: none;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            font-size: 1.9rem;
+            cursor: pointer;
+            box-shadow: 0 8px 22px var(--accent-glow);
+            transition: all 0.25s ease;
+        }
+        .quiz-play:hover { transform: translateY(-3px) scale(1.03); }
+        .quiz-play:active { transform: scale(0.96); }
+        .quiz-hint { font-size: 0.85rem; color: var(--text-secondary); }
+        .quiz-opts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .quiz-opt {
+            padding: 18px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Lucida Sans Unicode', 'Segoe UI', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .quiz-opt:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-3px); }
+        .quiz-opt:disabled { cursor: default; opacity: 0.6; }
+        .quiz-opt.right { border-color: #16a34a; background: rgba(22, 163, 74, 0.12); color: #16a34a; opacity: 1; }
+        .quiz-opt.wrong { border-color: #dc2626; background: rgba(220, 38, 38, 0.1); color: #dc2626; opacity: 1; }
+        .quiz-feedback { min-height: 24px; margin-top: 14px; text-align: center; font-size: 0.86rem; color: var(--text-secondary); }
+        .quiz-feedback.ok { color: #16a34a; }
+        .quiz-feedback.bad { color: #dc2626; }
+        .quiz-actions { display: flex; gap: 10px; margin-top: 4px; }
+        .quiz-actions button { flex: 1; }
+        .quiz-actions button:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
+
         @media (max-width: 640px) {
             .top-bar { padding: 12px 16px; }
             .main-container { padding: 16px; }
@@ -422,6 +472,8 @@
             .modal-content { padding: 18px; }
             .word-row { gap: 8px; }
             .pair-grid { grid-template-columns: 1fr; }
+            .quiz-panel { padding: 16px; }
+            .quiz-opts { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
     <script src="user.js"></script>
@@ -445,6 +497,7 @@
     <div class="mode-bar">
         <button class="mode-tab active" data-mode="study">🔊 音标发音</button>
         <button class="mode-tab" data-mode="pairs">⚖️ 相似读音对比</button>
+        <button class="mode-tab" data-mode="quiz">🎯 听音辨标</button>
     </div>
 
     <div class="main-container">
@@ -458,6 +511,28 @@
         <section class="mode-sec" id="pairsSec">
             <p class="sec-intro">每组两个音只差一个音素。点击单词可听发音，「对比音素」用真人美音连续播放两个音，「对比单词」连续朗读两个例词，感受细微差别。</p>
             <div class="pair-grid" id="pairGrid"></div>
+        </section>
+
+        <section class="mode-sec" id="quizSec">
+            <p class="sec-intro">听真人美音，从 4 个音标里选出听到的那一个。答错的音会进入“待重练”，后面的题目会优先考它。</p>
+            <div class="quiz-panel">
+                <div class="quiz-stats">
+                    <span>答对 <b id="quizRight">0</b> / <b id="quizTotal">0</b></span>
+                    <span>连对 <b id="quizStreak">0</b></span>
+                    <span>正确率 <b id="quizAcc">—</b></span>
+                    <span>待重练 <b id="quizPool">0</b></span>
+                </div>
+                <div class="quiz-stage">
+                    <button class="quiz-play" id="quizPlayBtn" title="再听一遍">🔊</button>
+                    <div class="quiz-hint" id="quizHint">先听一遍，再选音标</div>
+                </div>
+                <div class="quiz-opts" id="quizOpts"></div>
+                <div class="quiz-feedback" id="quizFeedback"></div>
+                <div class="quiz-actions">
+                    <button class="btn-primary" id="quizNextBtn" disabled>下一题 →</button>
+                    <button class="btn-ghost" id="quizResetBtn">重新开始</button>
+                </div>
+            </div>
         </section>
     </div>
 
@@ -631,6 +706,7 @@
             document.querySelectorAll('.mode-sec').forEach(s => s.classList.remove('active'));
             $(mode + 'Sec').classList.add('active');
             stopAudio();
+            if (mode === 'quiz') nextQuizQuestion(true);
         }
 
         // ===== 音标总览 =====
@@ -812,6 +888,95 @@
             });
         }
 
+        // ===== 听音辨标 =====
+        const quizState = { p: null, opts: [], answered: false, right: 0, total: 0, streak: 0, pool: [] };
+        const isVowel = p => ['vs', 'vl', 'vd'].includes(p.group);
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function renderQuizStats() {
+            $('quizRight').textContent = quizState.right;
+            $('quizTotal').textContent = quizState.total;
+            $('quizStreak').textContent = quizState.streak;
+            $('quizPool').textContent = quizState.pool.length;
+            $('quizAcc').textContent = quizState.total
+                ? Math.round(quizState.right / quizState.total * 100) + '%' : '—';
+        }
+
+        function nextQuizQuestion(play) {
+            // 错题池优先，重练完再随机出新题
+            let p = null;
+            if (quizState.pool.length) {
+                const i = Math.floor(Math.random() * quizState.pool.length);
+                p = PHONEMES.find(x => x.id === quizState.pool[i]);
+                quizState.pool.splice(i, 1);
+            }
+            if (!p) p = PHONEMES[Math.floor(Math.random() * PHONEMES.length)];
+
+            const pool = PHONEMES.filter(x => x.id !== p.id && isVowel(x) === isVowel(p));
+            quizState.p = p;
+            quizState.answered = false;
+            quizState.opts = shuffle([p, ...shuffle(pool.slice()).slice(0, 3)]);
+
+            $('quizOpts').innerHTML = quizState.opts.map(o =>
+                `<button class="quiz-opt" data-opt="${o.id}">${SYM(o)}</button>`).join('');
+            $('quizOpts').querySelectorAll('.quiz-opt').forEach(btn => {
+                btn.addEventListener('click', () => answerQuiz(btn));
+            });
+            $('quizHint').textContent = isVowel(p) ? '听一听，这是哪个元音？' : '听一听，这是哪个辅音？';
+            $('quizFeedback').textContent = '';
+            $('quizFeedback').className = 'quiz-feedback';
+            $('quizNextBtn').disabled = true;
+            renderQuizStats();
+            if (play) playPhoneme(p);
+        }
+
+        function answerQuiz(btn) {
+            if (quizState.answered) return;
+            quizState.answered = true;
+            const p = quizState.p;
+            const ok = btn.dataset.opt === p.id;
+
+            quizState.total++;
+            if (ok) {
+                quizState.right++;
+                quizState.streak++;
+            } else {
+                quizState.streak = 0;
+                if (!quizState.pool.includes(p.id)) quizState.pool.push(p.id);
+            }
+
+            $('quizOpts').querySelectorAll('.quiz-opt').forEach(b => {
+                b.disabled = true;
+                if (b.dataset.opt === p.id) b.classList.add('right');
+            });
+            if (!ok) btn.classList.add('wrong');
+
+            const fb = $('quizFeedback');
+            fb.textContent = ok
+                ? `✓ 答对了！${SYM(p)} 例词 ${p.words[0].w}（${p.words[0].cn}）`
+                : `✗ 这是 ${SYM(p)}，不是 ${btn.textContent}。例词 ${p.words[0].w}，再听一遍。`;
+            fb.className = 'quiz-feedback ' + (ok ? 'ok' : 'bad');
+
+            $('quizNextBtn').disabled = false;
+            renderQuizStats();
+            if (!ok) playPhoneme(p);
+        }
+
+        function resetQuiz() {
+            quizState.right = 0;
+            quizState.total = 0;
+            quizState.streak = 0;
+            quizState.pool = [];
+            nextQuizQuestion(true);
+        }
+
         // ===== 初始化 =====
         function init() {
             initTheme();
@@ -826,6 +991,13 @@
             document.addEventListener('keydown', e => {
                 if (e.key === 'Escape') closeModal();
             });
+            $('quizPlayBtn').addEventListener('click', () => {
+                if (quizState.p) playPhoneme(quizState.p);
+            });
+            $('quizNextBtn').addEventListener('click', () => nextQuizQuestion(true));
+            $('quizResetBtn').addEventListener('click', resetQuiz);
+            nextQuizQuestion(false);
+
             renderStudy();
             renderPairs();
             const idle = window.requestIdleCallback || (fn => setTimeout(fn, 500));

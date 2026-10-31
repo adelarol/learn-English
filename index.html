@@ -911,6 +911,7 @@
   .hero-inner {
     width: 100%;
     min-height: 100vh;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1112,12 +1113,34 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
+  /* Hero 入场动画：页面加载时各元素依次浮现 */
+  .hero-top-note, .hero-title, .hero-desc, .hero-btns, .hero-switch-area {
+    opacity: 0;
+    transform: translateY(26px);
+    animation: hero-enter 0.9s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+  }
+  .hero-title { animation-delay: 0.08s; }
+  .hero-desc { animation-delay: 0.2s; }
+  .hero-btns { animation-delay: 0.32s; }
+  .hero-switch-area { animation-delay: 0.44s; }
+  @keyframes hero-enter {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 工具卡片：随区块入场依次淡入（仅透明度，不影响 hover 位移手感） */
+  .tools .card { opacity: 0; }
+  .tools.in .card {
+    opacity: 1;
+    transition: opacity 0.7s cubic-bezier(0.2, 0, 0.2, 1), transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+  }
+  .tools.in .card:nth-child(2) { transition-delay: 0.08s, 0s, 0s, 0s; }
+  .tools.in .card:nth-child(3) { transition-delay: 0.16s, 0s, 0s, 0s; }
+  .tools.in .card:nth-child(4) { transition-delay: 0.24s, 0s, 0s, 0s; }
+  .tools.in .card:nth-child(5) { transition-delay: 0.32s, 0s, 0s, 0s; }
+
   </style>
 </head>
 
-<!--放到页面head或者body末尾-->
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
 <script src="user.js"></script>
 
 
@@ -1181,6 +1204,9 @@
   <!-- ===== HERO ===== -->
   <section class="hero-pin-wrap">
     <div class="hero-inner">
+      <!-- 顶部呼吸光晕 -->
+      <div class="hero-glow"></div>
+
       <!-- 顶部中英小字提示 -->
       <div class="hero-top-note">
         <div class="zh-text">纯浏览器本地工具，雅思与课本单词自测练习，进度自动保存</div>
@@ -1431,7 +1457,7 @@
   </div>
 
   <!-- ===== FOOTER ===== -->
-  <footer class="footer">
+  <footer class="footer reveal">
     <div class="footer-inner">
       <div class="footer-copy">© 2026 ADELAROL · 英语学习中心</div>
       <div class="footer-links">
@@ -1446,42 +1472,33 @@
   </footer>
 
   <script>
-  gsap.registerPlugin(ScrollTrigger);
-
-  ScrollTrigger.create({
-    trigger: ".hero-pin-wrap",
-    pin: ".hero-inner",
-    start:"top top",
-    end:"+=720px",
-    scrub:0.8,
-    animation:gsap.to(".hero-inner",{
-      opacity:0,
-      scale:0.88
-    }),
-    // markers:true
-  });
-
-    // ===== 滚动触发动画（IntersectionObserver + CSS过渡） =====
-    const gsapObserver = new IntersectionObserver((entries) => {
+    // ===== 滚动入场动画（纯 CSS 过渡 + IntersectionObserver，无外部依赖） =====
+    const revealObserver = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
           e.target.classList.add('in');
-          gsapObserver.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
-    document.querySelectorAll('.gsap-reveal').forEach(el => gsapObserver.observe(el));
-
-    // Scroll reveal animation
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('in');
-          io.unobserve(e.target);
+          revealObserver.unobserve(e.target);
         }
       });
     }, { threshold: 0, rootMargin: '0px 0px 200px 0px' });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    document.querySelectorAll('.reveal, .gsap-reveal').forEach(el => revealObserver.observe(el));
+
+    // ===== Hero 滚动淡出缩小（原生实现，替代原 GSAP pin 效果） =====
+    const heroInner = document.querySelector('.hero-inner');
+    let heroTicking = false;
+    function heroScrollFade() {
+      const y = window.scrollY;
+      const range = Math.min(window.innerHeight * 0.85, 700);
+      const p = Math.min(Math.max(y / range, 0), 1);
+      heroInner.style.opacity = String(1 - p * 0.92);
+      heroInner.style.transform = 'scale(' + (1 - p * 0.08) + ') translateY(' + (p * -24) + 'px)';
+    }
+    window.addEventListener('scroll', () => {
+      if (!heroTicking) {
+        heroTicking = true;
+        requestAnimationFrame(() => { heroScrollFade(); heroTicking = false; });
+      }
+    }, { passive: true });
 
     // ===== hero 切换区：描述文字始终保留，悬浮按钮只显示/隐藏卡片 =====
     const ieltsBtn = document.getElementById('ieltsBtn');

@@ -500,6 +500,7 @@
             if ('speechSynthesis' in window) speechSynthesis.cancel();
             if (currentAudio) {
                 currentAudio.onended = null;
+                currentAudio.ontimeupdate = null;
                 currentAudio.pause();
                 try { currentAudio.currentTime = 0; } catch (e) {}
                 currentAudio = null;
@@ -515,13 +516,50 @@
                     return;
                 }
                 const a = getAudio(slugs[i]);
-                try { a.currentTime = 0; } catch (e) {}
-                a.playbackRate = rate || 1;
+                const trim = PHONEME_TRIM[slugs[i]] || [0, 0];
                 currentAudio = a;
-                a.onended = () => { a.onended = null; step(i + 1); };
-                a.play().catch(() => { a.onended = null; step(i + 1); });
+                a.playbackRate = rate || 1;
+
+                const begin = () => {
+                    if (a !== currentAudio) return; // 已被新的播放请求接管
+                    if (trim[0] > 0) { try { a.currentTime = trim[0]; } catch (e) {} }
+                    if (trim[1] > 0) {
+                        // 尾部是静音，到点就收，避免连读时出现长间隔
+                        a.ontimeupdate = () => {
+                            if (!a.paused && a.currentTime >= trim[1]) {
+                                a.onended = null;
+                                a.ontimeupdate = null;
+                                a.pause();
+                                step(i + 1);
+                            }
+                        };
+                    }
+                    a.play().catch(() => {
+                        if (a !== currentAudio) return;
+                        a.onended = null;
+                        a.ontimeupdate = null;
+                        step(i + 1);
+                    });
+                };
+                a.onended = () => {
+                    a.onended = null;
+                    a.ontimeupdate = null;
+                    step(i + 1);
+                };
+
+                // 首次播放时元素可能还没拿到时长，等 metadata 后再定位起播点
+                if (a.readyState >= 1) begin();
+                else a.addEventListener('loadedmetadata', begin, { once: true });
             };
             step(0);
+        }
+
+        // 页面空闲时预取全部真人录音，点击时不用等网络
+        function preloadPhonemeAudio() {
+            (PHONEME_AUDIO.us || []).forEach(slug => {
+                const a = getAudio(slug);
+                if (a.readyState === 0) a.load();
+            });
         }
 
         // 美音中没有独立央化双元音，按数据里的组合用真人音素连读
@@ -790,6 +828,8 @@
             });
             renderStudy();
             renderPairs();
+            const idle = window.requestIdleCallback || (fn => setTimeout(fn, 500));
+            idle(preloadPhonemeAudio, { timeout: 2000 });
         }
         document.addEventListener('DOMContentLoaded', init);
     </script>
